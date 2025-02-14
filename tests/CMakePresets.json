@@ -1,0 +1,60 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "config-common",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "warnings": {
+                "deprecated": true,
+                "uninitialized": true
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_PREFIX_PATH": "${sourceParentDir}",
+                "CMAKE_CONFIGURATION_TYPES": "Release;ReleaseEP;Debug;DebugEP;DebugAsan",
+                "CMAKE_CROSS_CONFIGS": "all",
+                "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
+                "CMAKE_DEFAULT_CONFIGS": "Debug"
+            }
+        }
+    ],
+    "vendor": {
+        "preset-matrix-regen": {
+            "version": 1,
+            "word-separator": "-",
+            "preset-groups": {
+                "configure": {
+                    "prefix": "config",
+                    "common": [
+                        "config-common"
+                    ],
+                    "parameters": {
+                        "toolchain": [
+                            "gcc",
+                            "clang"
+                        ]
+                    },
+                    "static": {
+                        "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
+                        "toolchainSuffix": ".cmake"
+                    },
+                    "shape": {
+                        "toolchain": {
+                            "toolchainFile": "{static:toolchainBasePath}{parameter}{static:toolchainSuffix}"
+                        },
+                        "cacheVariables": {
+                            "MY_EXTRA_STUFF": "$(this).text('native').if('{parameter}'==gcc).else('m32')"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

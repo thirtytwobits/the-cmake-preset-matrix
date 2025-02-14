@@ -1,74 +1,98 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name =  "py-project-toml"
-authors = [
-    {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
-]
-description = "Sample Python Project for creating a new Python Module"
+name = "the-cmake-preset-matrix"
+authors = [{ name = "Scott Dixon", email = "dixonsco@amazon.com" }]
+description = "Generate CMakePresets.json configuration and build presets from the cartesian product of a set of parameters."
 readme = "README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.8.1"
+requires-python = ">=3.10"
 dynamic = ["version"]
+dependencies = ["parsimonious"]
 
 [project.optional-dependencies]
-spark = [
-    "pyspark>=3.0.0"
-]
 test = [
-    "bandit[toml]==1.7.5",
-    "black==23.3.0",
-    "check-manifest==0.49",
-    "flake8-bugbear==23.5.9",
+    "types-parsimonious",
+    "tox>=4.19.0",
+    "black==25.1.0",
+    "colorama",
+    "coverage",
+    "check-manifest",
+    "flake8-bugbear",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
     "flake8-pyproject",
-    "pre-commit==3.3.1",
-    "pylint==2.17.4",
+    "isort==6.0.0",
+    "lxml",
+    "mypy",
+    "pre-commit",
+    "pylint",
     "pylint_junit",
-    "pytest-cov==4.0.0",
-    "pytest-mock<3.10.1",
+    "pytest-cov",
+    "pytest-mock",
     "pytest-runner",
-    "pytest==7.3.1",
+    "pytest>=8.3.4",
     "pytest-github-actions-annotate-failures",
-    "shellcheck-py==0.9.0.2"
+    "sybil[pytest]",
 ]
+schema = ["jsonschema>=4.23.0"]
 
 [project.urls]
-Documentation = "https://github.com/microsoft/python-package-template/tree/main#readme"
-Source = "https://github.com/microsoft/python-package-template"
-Tracker = "https://github.com/microsoft/python-package-template/issues"
+Documentation = "https://github.com/thirtytwobits/the-cmake-preset-matrix/tree/main#readme"
+Source = "https://github.com/thirtytwobits/the-cmake-preset-matrix"
+Tracker = "https://github.com/thirtytwobits/the-cmake-preset-matrix/issues"
+
+[project.scripts]
+tcpm = "tcpm:cli_main"
+
+
+# +---------------------------------------------------------------------------+
+# | TOOLS
+# +---------------------------------------------------------------------------+
 
 [tool.flit.module]
-name = "python_package"
-
-[tool.bandit]
-exclude_dirs = ["build","dist","tests","scripts"]
-number = 4
-recursive = true
-targets = "src"
+name = "tcpm"
 
 [tool.black]
 line-length = 120
-fast = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
 
 [tool.coverage.run]
 branch = true
+parallel = true
+relative_files = true
+include = ["src/tcpm/*"]
+
+
+[tool.coverage.paths]
+source = ["src"]
 
 [tool.coverage.report]
 fail_under = 100
+exclude_also = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "assert False",
+    "if __name__ == .__main__.",
+]
+
 
 [tool.flake8]
 max-line-length = 120
@@ -77,239 +101,198 @@ exclude = [
     ".eggs",
     ".git",
     ".tox",
-    "nssm",
     "obj",
     "out",
     "packages",
     "pywin32",
     "tests",
-    "swagger_client"
 ]
-ignore = [
-    "E722",
-    "B001",
-    "W503",
-    "E203"
-]
+ignore = ["E722", "B001", "W503", "E203"]
 
-[tool.pyright]
-include = ["src"]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-]
-venv = "env37"
-
-reportMissingImports = true
-reportMissingTypeStubs = false
-
-pythonVersion = "3.7"
-pythonPlatform = "Linux"
-
-executionEnvironments = [
-  { root = "src" }
-]
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_context = true
+mypy_path = "src"
+exclude = ["^test_.*\\.py$"]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration'"
-pythonpath = [
-  "src"
-]
-testpaths = "tests"
+addopts = ["-p", "no:doctest", "--no-cov"]
+pythonpath = ["src"]
+testpaths = ["tests", "src"]
 junit_family = "xunit2"
-markers = [
-    "integration: marks as integration test",
-    "notebooks: marks as notebook test",
-    "gpu: marks as gpu test",
-    "spark: marks tests which need Spark",
-    "slow: marks tests as slow",
-    "unit: fast offline tests",
+norecursedirs = ["build*", ".*", "__*"]
+log_level = "DEBUG"
+log_cli = true
+log_cli_level = "WARNING"
+
+
+# +---------------------------------------------------------------------------+
+# | TOOL:TOX
+# +---------------------------------------------------------------------------+
+[tool.tox]
+requires = ["tox>=4.19", "virtualenv>20.2"]
+env_list = [
+    "py310-test",
+    "py311-test",
+    "py312-test",
+    "py313-test",
+    "lint",
+    "report",
 ]
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py, integration, spark, all
+[tool.tox.env_run_base]
+description = "Run pytest under {base_python}"
+allowlist_externals = ["coverage"]
+extras = ["test"]
+commands = [
+    [
+        "coverage",
+        "run",
+        "-m",
+        "pytest",
+        "--basetemp={envtmpdir}",
+        "-p",
+        "no:cacheprovider",
+        "--junit-xml={envtmpdir}/xunit-result.xml",
+        "--rootdir={toxinidir}",
+        "--log-file={envtmpdir}/pytest-test.log",
+        { replace = "posargs", default = [
+            "{toxinidir}/tests",
+        ], extend = true },
+    ],
+    [
+        "coverage",
+        "combine",
+        "--append",
+    ],
+    [
+        "coverage",
+        "run",
+        "-m",
+        "pytest",
+        "--basetemp={envtmpdir}",
+        "-p",
+        "no:cacheprovider",
+        "--junit-xml={envtmpdir}/xunit-result.xml",
+        "--rootdir={toxinidir}",
+        "--log-file={envtmpdir}/pytest-test.log",
+        { replace = "posargs", default = [
+            "{toxinidir}/src",
+        ], extend = true },
+    ],
+    [
+        "coverage",
+        "combine",
+        "--append",
+    ],
+]
 
-[testenv]
-commands =
-    pytest -m "not integration and not spark" {posargs}
 
-[testenv:integration]
-commands =
-    pytest -m "integration" {posargs}
+[tool.tox.env.lint]
+description = "run all linters on code base"
+commands = [
+    [
+        "python",
+        "-m",
+        "isort",
+        "src",
+        "--check",
+        "--diff",
+        "--color",
+    ],
+    [
+        "python",
+        "-m",
+        "black",
+        "--diff",
+        "--color",
+        "--check",
+        "--config=pyproject.toml",
+        "src",
+    ],
+    [
+        "python",
+        "-m",
+        "flake8",
+        "src",
+    ],
+    [
+        "python",
+        "-m",
+        "mypy",
+        "-p",
+        "tcpm",
+        "--cache-dir",
+        "{envtmpdir}",
+        "--txt-report",
+        "{envtmpdir}/mypy-report",
+    ],
+    [
+        "python",
+        "-m",
+        "pylint",
+        "--output={envtmpdir}/pylint.txt",
+        "--clear-cache-post-run=y",
+        "--rcfile={toxinidir}/pyproject.toml",
+        "{toxinidir}/src/tcpm",
+    ],
+]
 
-[testenv:spark]
-extras = spark
-setenv =
-       PYSPARK_DRIVER_PYTHON = {envpython}
-       PYSPARK_PYTHON = {envpython}
-commands =
-    pytest -m "spark" {posargs}
+[tool.tox.env.report]
+description = "Create test summary reports"
+commands = [
+    [
+        "-",
+        "coverage",
+        "combine",
+        "--append",
+    ],
+    [
+        "-",
+        "coverage",
+        "html",
+        "-d",
+        "{envtmpdir}",
+    ],
+    [
+        "coverage",
+        "xml",
+        "-o",
+        "{envtmpdir}/coverage.xml",
+    ],
+]
 
-[testenv:all]
-extras = all
-setenv =
-       PYSPARK_DRIVER_PYTHON = {envpython}
-       PYSPARK_PYTHON = {envpython}
-commands =
-    pytest {posargs}
-"""
+# +---------------------------------------------------------------------------+
+# | TOOL:PYLINT
+# +---------------------------------------------------------------------------+
 
 [tool.pylint]
-extension-pkg-whitelist= [
-    "numpy",
-    "torch",
-    "cv2",
-    "pyodbc",
-    "pydantic",
-    "ciso8601",
-    "netcdf4",
-    "scipy"
-]
-ignore="CVS"
-ignore-patterns="test.*?py,conftest.py"
-init-hook='import sys; sys.setrecursionlimit(8 * sys.getrecursionlimit())'
-jobs=0
-limit-inference-results=100
-persistent="yes"
-suggestion-mode="yes"
-unsafe-load-any-extension="no"
+source-roots = "src"
+disable = ["no-else-return", "invalid-name", "C0116"]
+ignore = "CVS"
+ignore-paths = ["^test_.*\\.py$"]
+max-line-length = 120
+max-args = 8
+max-attributes = 12
+min-public-methods = 0
+ignore-patterns = "conftest.py"
+init-hook = 'import sys; sys.setrecursionlimit(8 * sys.getrecursionlimit())'
+limit-inference-results = 100
+persistent = "yes"
+suggestion-mode = "yes"
+unsafe-load-any-extension = "no"
 
 [tool.pylint.'MESSAGES CONTROL']
-enable="c-extension-no-member"
+enable = "c-extension-no-member"
 
 [tool.pylint.'REPORTS']
-evaluation="10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)"
-output-format="text"
-reports="no"
-score="yes"
-
-[tool.pylint.'REFACTORING']
-max-nested-blocks=5
-never-returning-functions="sys.exit"
-
-[tool.pylint.'BASIC']
-argument-naming-style="snake_case"
-attr-naming-style="snake_case"
-bad-names= [
-    "foo",
-    "bar"
-]
-class-attribute-naming-style="any"
-class-naming-style="PascalCase"
-const-naming-style="UPPER_CASE"
-docstring-min-length=-1
-function-naming-style="snake_case"
-good-names= [
-    "i",
-    "j",
-    "k",
-    "ex",
-    "Run",
-    "_"
-]
-include-naming-hint="yes"
-inlinevar-naming-style="any"
-method-naming-style="snake_case"
-module-naming-style="any"
-no-docstring-rgx="^_"
-property-classes="abc.abstractproperty"
-variable-naming-style="snake_case"
-
-[tool.pylint.'FORMAT']
-ignore-long-lines="^\\s*(# )?.*['\"]?<?https?://\\S+>?"
-indent-after-paren=4
-indent-string='    '
-max-line-length=120
-max-module-lines=1000
-single-line-class-stmt="no"
-single-line-if-stmt="no"
-
-[tool.pylint.'LOGGING']
-logging-format-style="old"
-logging-modules="logging"
-
-[tool.pylint.'MISCELLANEOUS']
-notes= [
-    "FIXME",
-    "XXX",
-    "TODO"
-]
-
-[tool.pylint.'SIMILARITIES']
-ignore-comments="yes"
-ignore-docstrings="yes"
-ignore-imports="yes"
-min-similarity-lines=7
-
-[tool.pylint.'SPELLING']
-max-spelling-suggestions=4
-spelling-store-unknown-words="no"
-
-[tool.pylint.'STRING']
-check-str-concat-over-line-jumps="no"
-
-[tool.pylint.'TYPECHECK']
-contextmanager-decorators="contextlib.contextmanager"
-generated-members="numpy.*,np.*,pyspark.sql.functions,collect_list"
-ignore-mixin-members="yes"
-ignore-none="yes"
-ignore-on-opaque-inference="yes"
-ignored-classes="optparse.Values,thread._local,_thread._local,numpy,torch,swagger_client"
-ignored-modules="numpy,torch,swagger_client,netCDF4,scipy"
-missing-member-hint="yes"
-missing-member-hint-distance=1
-missing-member-max-choices=1
-
-[tool.pylint.'VARIABLES']
-additional-builtins="dbutils"
-allow-global-unused-variables="yes"
-callbacks= [
-    "cb_",
-    "_cb"
-]
-dummy-variables-rgx="_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_"
-ignored-argument-names="_.*|^ignored_|^unused_"
-init-import="no"
-redefining-builtins-modules="six.moves,past.builtins,future.builtins,builtins,io"
-
-[tool.pylint.'CLASSES']
-defining-attr-methods= [
-    "__init__",
-    "__new__",
-    "setUp",
-    "__post_init__"
-]
-exclude-protected= [
-    "_asdict",
-    "_fields",
-    "_replace",
-    "_source",
-    "_make"
-]
-valid-classmethod-first-arg="cls"
-valid-metaclass-classmethod-first-arg="cls"
-
-[tool.pylint.'DESIGN']
-max-args=5
-max-attributes=7
-max-bool-expr=5
-max-branches=12
-max-locals=15
-max-parents=7
-max-public-methods=20
-max-returns=6
-max-statements=50
-min-public-methods=2
-
-[tool.pylint.'IMPORTS']
-allow-wildcard-with-all="no"
-analyse-fallback-blocks="no"
-deprecated-modules="optparse,tkinter.tix"
-
-[tool.pylint.'EXCEPTIONS']
-overgeneral-exceptions= [
-    "BaseException",
-    "Exception"
-]
+evaluation = "10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)"
+output-format = "text"
+reports = "yes"
+score = "yes"

@@ -1,6 +1,10 @@
 {
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
+    "editor.rulers": [
+        120
+    ],
+    "coverage-gutters.coverageReportFileName": "${workspaceFolder}/.tox/report/tmp/coverage.xml",
     "files.trimTrailingWhitespace": true,
     "files.autoSave": "onFocusChange",
     "git.autofetch": true,
@@ -10,12 +14,13 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.defaultInterpreterPath": "/usr/local/bin/python",
-    "python.formatting.provider": "black",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "pylint.args": [
-        "--rcfile=pyproject.toml"
+        "--rcfile=${workspaceFolder}/pyproject.toml"
+    ],
+    "pylint.ignorePatterns": [
+        "${workspaceFolder}/tests/**"
     ],
     "black-formatter.args": [
         "--config=pyproject.toml"
@@ -25,5 +30,31 @@
     ],
     "isort.args": [
         "--settings-path=pyproject.toml"
-    ]
+    ],
+    "mypy-type-checker.args": [
+        "--config-file=${workspaceFolder}/pyproject.toml",
+    ],
+    "mypy-type-checker.ignorePatterns": [
+        "${workspaceFolder}/tests/**"
+    ],
+    "cSpell.allowCompoundWords": true,
+    "cSpell.caseSensitive": false,
+    "cSpell.language": "en-GB",
+    "cSpell.languageSettings": [
+        {
+            "languageId": "toml",
+            "dictionaries": [
+                "python",
+                "toml"
+            ]
+        },
+    ],
+    "cSpell.customDictionaries": {
+        "tcpm": {
+            "name": "project-words",
+            "path": "${workspaceFolder}/.vscode/project-words.txt",
+            "description": "Words used in this project.",
+            "addWords": true
+        }
+    },
 }

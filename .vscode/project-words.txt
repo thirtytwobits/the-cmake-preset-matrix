@@ -1,0 +1,9 @@
+config
+dixonsco
+envlist
+envtmpdir
+norecursedirs
+pquery
+regen
+tcpm
+xunit
