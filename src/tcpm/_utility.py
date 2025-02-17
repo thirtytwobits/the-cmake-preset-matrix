@@ -37,7 +37,7 @@ def list_merge(d1: list, d2: list) -> None:
 
 def deep_merge(d1: dict, d2: dict) -> None:
     """
-    merge two dictionary structures ensureing no duplicate keys or list entries are created.
+    merge two dictionary structures ensuring no duplicate keys or list entries are created.
     """
     for key, value in d2.items():
         if key in d1:

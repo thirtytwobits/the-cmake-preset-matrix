@@ -14,15 +14,9 @@ from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
+from ._core import transform_in_place
 from ._data_model import make_meta_presets
-from ._generators import make_matrix_presets, make_parameter_presets
-from ._utility import (
-    clean_source,
-    merge_preset_list,
-    reclean_source,
-    validate_json_schema_for_presets_unless,
-    validate_json_schema_for_result_unless,
-)
+from ._utility import validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
 
 
 def make_parser() -> argparse.ArgumentParser:
@@ -50,12 +44,6 @@ def make_parser() -> argparse.ArgumentParser:
                 - shape:    A template for the shape of the presets. The shape is a dictionary of keys and values that
                             are used to generate the presets. The values can be either a string or a dictionary of
                             key-value pairs. The key-value pairs are recursively expanded until a string is reached.
-                            The string can be a lambda function that is evaluated with the following tuple values:
-                                - [0] doc: The source json document
-                                - [1] parameter: The parameter.
-                                - [2] parameter seperator: The word separator.
-                                - [3] name: The name of the preset.
-                                - [4] groups: The preset groups
                 - parameters: A dictionary of named values to use when generating presets.
 
     """
@@ -139,53 +127,7 @@ def cli_main(args: Any | None = None) -> int:
     ):
         return 1
 
-    skip_list = set()
-    for group_field in fields(meta_presets.groups):
-        if f"{group_field.name}Presets" not in meta_presets.source:
-            skip_list.add(group_field.name)
-
-    clean_source("configure", args.clean, True, meta_presets)
-    hidden_preset_index = make_parameter_presets(
-        "configure",
-        True,
-        meta_presets,
-    )
-    reclean_source("configure", args.clean, True, meta_presets)  # TODO: I don't think I need reclean anymore
-    meta_presets.source["configurePresets"] = merge_preset_list(
-        meta_presets.source["configurePresets"], hidden_preset_index
-    )
-
-    run_pquery("onConfigure", meta_presets.source)
-
-    clean_source("configure", args.clean, False, meta_presets)
-    visible_preset_index = make_matrix_presets(
-        "configure",
-        False,
-        meta_presets,
-    )
-    reclean_source("configure", args.clean, False, meta_presets)
-    meta_presets.source["configurePresets"] = merge_preset_list(
-        meta_presets.source["configurePresets"], visible_preset_index
-    )
-
-    for group_field in fields(meta_presets.groups):
-        group = group_field.name
-        groupKey = f"{group}Presets"
-        if group == "configure":
-            # configure is special because that's where we do the matrix generation.
-            continue
-        if group in skip_list:
-            print(f"Skipping group: {groupKey} (missing in source document)")
-            continue
-
-        clean_source(group, args.clean, False, meta_presets)
-        preset_index = make_matrix_presets(
-            group,
-            False,
-            meta_presets,
-        )
-        reclean_source(group, args.clean, False, meta_presets)
-        meta_presets.source[groupKey] = merge_preset_list(meta_presets.source[groupKey], preset_index)
+    skip_list = transform_in_place(meta_presets, args.clean)
 
     if not validate_json_schema_for_result_unless(
         args.no_schema_validation, args.presets_schema_url, args.force, meta_presets.source
@@ -208,6 +150,7 @@ def cli_main(args: Any | None = None) -> int:
                 if response != "y":
                     print("Operation cancelled.")
                     return 1
+
     if not args.force and args.presets_file.exists():
         # are you sure?
         response = input(f"{args.presets_file} already exists. Overwrite? (y/n): ").strip().lower()

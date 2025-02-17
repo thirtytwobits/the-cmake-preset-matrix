@@ -4,6 +4,7 @@ envlist
 envtmpdir
 norecursedirs
 pquery
+reclean
 regen
 tcpm
 xunit

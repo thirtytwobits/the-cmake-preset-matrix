@@ -12,6 +12,7 @@ Based on work originally done by @dixonsco on the [OpenCyphal](https://opencypha
 # isort: skip_file
 
 __version__ = "0.1.0"
+
 # + ------------------------------------------------------------------------------------------------------------------+
 # | LIBRARY EXPORTS                                                                                                   |
 # + ------------------------------------------------------------------------------------------------------------------+
@@ -24,23 +25,23 @@ from ._data_model import StructuredPresets
 from ._data_model import make_default_meta_presets
 from ._data_model import make_meta_presets
 from ._errors import DataModelError
-from ._errors import LambdaRenderingError
 from ._errors import RenderError
 from ._errors import SchemaError
 from ._errors import VendorDataError
+from ._core import transform_in_place
 
 __all__ = [
+    "DataModelError",
     "PresetGroup",
     "Presets",
-    "StructuredPresets",
-    "make_meta_presets",
-    "make_default_meta_presets",
-    "DataModelError",
-    "LambdaRenderingError",
     "RenderError",
     "SchemaError",
+    "StructuredPresets",
     "VendorDataError",
     "cli_main",
+    "make_default_meta_presets",
+    "make_meta_presets",
+    "transform_in_place",
 ]
 
 # + ------------------------------------------------------------------------------------------------------------------+

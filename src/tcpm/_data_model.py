@@ -7,11 +7,13 @@ Data model for the presets file.
 """
 
 from dataclasses import dataclass
+from typing import Any
 
 from ._errors import VendorDataError
 
 __vendor_data_version__ = 1
 __default_word_separator__ = "-"
+__vendor_section_key__ = "preset-matrix-regen"
 
 
 @dataclass
@@ -24,8 +26,13 @@ class PresetGroup:
     prefix: str
     common: list[str]
     shape: dict
-    static: dict[str, str]
     parameters: dict[str, list]
+
+    def __getitem__(self, field_name: str) -> Any:
+        """
+        Python Data Model: subscriptable
+        """
+        return getattr(self, field_name)
 
 
 @dataclass
@@ -40,6 +47,12 @@ class Presets:
     package: PresetGroup
     workflow: PresetGroup
 
+    def __getitem__(self, field_name: str) -> Any:
+        """
+        Python Data Model: subscriptable
+        """
+        return getattr(self, field_name)
+
 
 @dataclass
 class StructuredPresets:
@@ -49,8 +62,15 @@ class StructuredPresets:
 
     source: dict
     version: int
+    static: dict
     word_separator: str
     groups: Presets
+
+    def __getitem__(self, field_name: str) -> Any:
+        """
+        Python Data Model: subscriptable
+        """
+        return getattr(self, field_name)
 
 
 def make_default_meta_presets() -> StructuredPresets:
@@ -58,16 +78,17 @@ def make_default_meta_presets() -> StructuredPresets:
     Create a structured representation of an empty presets file.
     """
     groups = Presets(
-        configure=PresetGroup("", "", [], {}, {}, {}),
-        build=PresetGroup("", "", [], {}, {}, {}),
-        test=PresetGroup("", "", [], {}, {}, {}),
-        package=PresetGroup("", "", [], {}, {}, {}),
-        workflow=PresetGroup("", "", [], {}, {}, {}),
+        configure=PresetGroup("", "", [], {}, {}),
+        build=PresetGroup("", "", [], {}, {}),
+        test=PresetGroup("", "", [], {}, {}),
+        package=PresetGroup("", "", [], {}, {}),
+        workflow=PresetGroup("", "", [], {}, {}),
     )
 
     meta_presets: StructuredPresets = StructuredPresets(
         source={},
         version=__vendor_data_version__,
+        static={},
         word_separator=__default_word_separator__,
         groups=groups,
     )
@@ -75,11 +96,6 @@ def make_default_meta_presets() -> StructuredPresets:
         group = getattr(groups, preset_group_name)
         group.name = preset_group_name
         group.prefix = f"{preset_group_name}{meta_presets.word_separator}"
-        group.common = []
-        group.shape = {}
-        group.static = {}
-        group.parameters = {}
-
     return meta_presets
 
 
@@ -99,7 +115,7 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
         raise VendorDataError("The presets file does not contain the 'vendor' key.")
 
     try:
-        preset_matrix_regen_vendor_data = json_presets["vendor"]["preset-matrix-regen"]
+        preset_matrix_regen_vendor_data = json_presets["vendor"][__vendor_section_key__]
     except KeyError as e:
         raise VendorDataError(
             "The presets file does not contain the 'preset_matrix_regen' key within the 'vendor' section."
@@ -120,6 +136,7 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     meta_presets: StructuredPresets = make_default_meta_presets()
     meta_presets.source = json_presets
     meta_presets.version = preset_matrix_regen_version
+    meta_presets.static = preset_matrix_regen_vendor_data["static"]
     if "word_separator" in preset_matrix_regen_vendor_data:
         meta_presets.word_separator = preset_matrix_regen_vendor_data["word_separator"]
 

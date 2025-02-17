@@ -37,12 +37,6 @@ class RenderError(RuntimeError):
         super().__init__(message)
 
 
-class LambdaRenderingError(RenderError):
-    """
-    Raised when rendering a field using a configuration-provided lambda fails.
-    """
-
-
 class DataError(ValueError):
     """
     Raised when input data is invalid.
@@ -55,6 +49,15 @@ class DataError(ValueError):
 class PQueryError(ValueError):
     """
     Raised when a pQuery fails to parse.
+    """
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class PQueryLocatorError(PQueryError):
+    """
+    Raised when a pQuery locator fails to parse.
     """
 
     def __init__(self, message: str):

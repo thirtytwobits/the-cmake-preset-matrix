@@ -10,7 +10,7 @@ import itertools
 from typing import Any
 
 from ._data_model import StructuredPresets
-from ._rendering import get_parameters, lambda_render_shape, param_renderer_map
+from ._rendering import get_parameters, render_shape, param_renderer_map
 from ._utility import deep_merge, filter_matrix_group_by_visibility, reduce_preset_name
 
 
@@ -45,7 +45,7 @@ def make_matrix_presets(
             preset["hidden"] = True
         for _, parameter in configuration:
             shape_template = parameter_shape_map[parameter]
-            rendered = lambda_render_shape(group, {"name": preset_name}, shape_template, parameter, meta_presets)
+            rendered = render_shape(group, {"name": preset_name}, shape_template, parameter, meta_presets)
             deep_merge(preset, rendered)
         parameter_renderer(preset, preset_group, configuration, meta_presets)
         if preset_name in presets:
@@ -75,7 +75,7 @@ def make_parameter_presets(
             preset: dict[str, Any] = {"name": preset_name}
             if hidden:
                 preset["hidden"] = hidden
-            lambda_render_shape(group, preset, shape_template, parameter, meta_presets)
+            render_shape(group, preset, shape_template, parameter, meta_presets)
             if preset_name in presets.keys():
                 deep_merge(presets[preset_name], preset)
             else:

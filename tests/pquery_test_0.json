@@ -1,0 +1,51 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "config-common",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Release;RelSize;Debug",
+                "CMAKE_CROSS_CONFIGS": "all",
+                "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
+                "CMAKE_DEFAULT_CONFIGS": "Debug"
+            }
+        }
+    ],
+    "vendor": {
+        "preset-matrix-regen": {
+            "version": 1,
+            "word-separator": "-",
+            "static": {
+                "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
+                "toolchainSuffix": ".cmake",
+                "configurationTypeList": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
+            },
+            "preset-groups": {
+                "configure": {
+                    "prefix": "config",
+                    "common": [
+                        "config-common"
+                    ],
+                    "parameters": {
+                        "toolchain": [
+                            "gcc",
+                            "clang"
+                        ]
+                    },
+                    "shape": {
+                        "toolchain": {
+                            "toolchainFile": "{static:toolchainBasePath}{parameter}{static:toolchainSuffix}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

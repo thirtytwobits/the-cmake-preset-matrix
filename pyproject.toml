@@ -28,7 +28,7 @@ test = [
     "black==25.1.0",
     "colorama",
     "coverage",
-    "check-manifest",
+    "check-manifest==0.50",
     "flake8-bugbear",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
