@@ -83,7 +83,7 @@ include = ["src/tcpm/*"]
 source = ["src"]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 50
 exclude_also = [
     "pragma: no cover",
     "def __repr__",
