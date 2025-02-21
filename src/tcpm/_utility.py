@@ -99,7 +99,7 @@ def _validate_json_schema(presets_schema_url: str, presets_source: dict) -> bool
     Validates the preset file against certain assumptions this script makes. If jsonschema and requests is available
     the script will also validate the file against the CMake presets schema pulled from github.
     """
-    import jsonschema  # type: ignore # pylint: disable=import-outside-toplevel
+    import jsonschema  # type: ignore # pylint: disable=import-outside-toplevel, import-error
 
     schema = get_schema(presets_schema_url)
 

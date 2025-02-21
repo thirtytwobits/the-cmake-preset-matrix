@@ -8,7 +8,7 @@ Various functions for rendering values in the presets file.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable
+from typing import Any, Callable
 
 from ._data_model import PresetGroup, StructuredPresets
 from ._utility import deep_merge, list_merge, reduce_preset_name
@@ -158,7 +158,7 @@ def get_parameter(
     group: str,
     name: str,
     meta_presets: StructuredPresets,
-) -> Iterable | None:
+) -> Any:
     """
     Renders a single parameter for a given group.
     """

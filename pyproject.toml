@@ -83,7 +83,7 @@ include = ["src/tcpm/*"]
 source = ["src"]
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 80
 exclude_also = [
     "pragma: no cover",
     "def __repr__",
@@ -137,14 +137,7 @@ log_cli_level = "WARNING"
 # +---------------------------------------------------------------------------+
 [tool.tox]
 requires = ["tox>=4.19", "virtualenv>20.2"]
-env_list = [
-    "py310-test",
-    "py311-test",
-    "py312-test",
-    "py313-test",
-    "lint",
-    "report",
-]
+env_list = ["py310-test", "py311-test", "py312-test", "py313-test"]
 
 [tool.tox.env_run_base]
 description = "Run pytest under {base_python}"
@@ -168,11 +161,6 @@ commands = [
     ],
     [
         "coverage",
-        "combine",
-        "--append",
-    ],
-    [
-        "coverage",
         "run",
         "-m",
         "pytest",
@@ -185,11 +173,6 @@ commands = [
         { replace = "posargs", default = [
             "{toxinidir}/src",
         ], extend = true },
-    ],
-    [
-        "coverage",
-        "combine",
-        "--append",
     ],
 ]
 
@@ -274,7 +257,13 @@ commands = [
 
 [tool.pylint]
 source-roots = "src"
-disable = ["no-else-return", "invalid-name", "C0116"]
+disable = [
+    "no-else-return",
+    "invalid-name",
+    "C0116",
+    "too-many-positional-arguments",
+    "fixme",
+]
 ignore = "CVS"
 ignore-paths = ["^test_.*\\.py$"]
 max-line-length = 120

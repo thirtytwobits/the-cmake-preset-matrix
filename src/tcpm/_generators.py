@@ -10,7 +10,7 @@ import itertools
 from typing import Any
 
 from ._data_model import StructuredPresets
-from ._rendering import get_parameters, render_shape, param_renderer_map
+from ._rendering import get_parameters, param_renderer_map, render_shape
 from ._utility import deep_merge, filter_matrix_group_by_visibility, reduce_preset_name
 
 
@@ -22,6 +22,8 @@ def make_matrix_presets(
     """
     Generate presets as a matrix of `configurations` based on the hidden presets in the based-on group.
     """
+    # pylint: disable=too-many-locals
+    # TODO: refactor. pylint is right about this.
     parameter_renderer = param_renderer_map[group]
     preset_matrix: dict[str, list[tuple[str, str]]] = {}
     parameter_shape_map: dict[str, dict] = {}

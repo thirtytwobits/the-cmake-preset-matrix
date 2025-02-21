@@ -5,6 +5,7 @@
 """
 Various functions for rendering values in the presets file.
 """
+# pylint: disable=too-many-lines
 
 from __future__ import annotations
 
@@ -16,8 +17,8 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from parsimonious.grammar import Grammar, NodeVisitor
-from parsimonious.nodes import Node
+from parsimonious.grammar import Grammar
+from parsimonious.nodes import Node, NodeVisitor
 
 from ._data_model import __vendor_section_key__, get_preset_group_names
 from ._errors import PQueryError, PQueryLocatorError
@@ -223,6 +224,7 @@ A function that visits document locations.
 # +------------------------------------------------------------------------------------------------------------------+
 
 
+# pylint: disable=too-many-public-methods
 class ReturnValue:
     """
     Type returned from a pQuery statement.
@@ -543,8 +545,8 @@ class PQueryVisitor(NodeVisitor):
         return node
 
     def visit_visitor_callstack(
-        self, node: Node, visited_children: Sequence[Any]
-    ) -> None | ReturnValue:  # pylint: disable=W0613
+        self, node: Node, visited_children: Sequence[Any]  # pylint: disable=W0613
+    ) -> None | ReturnValue:
         """
         This is the visitor call stack. It's visited right after the last visitor call in a sequence of visitor calls.
 
@@ -634,6 +636,7 @@ class PQueryVisitor(NodeVisitor):
             what_to_replace.value = what_to_replace.value.replace(old_value, new_value)
         return what_to_replace
 
+    # pylint: disable=R1711
     def visit_set_text(self, node: Node, visited_children: Sequence[Any]) -> Any:  # pylint: disable=W0613
         """
         Handles the behaviour of `text` functions when arguments are provided.
@@ -667,7 +670,9 @@ class PQueryVisitor(NodeVisitor):
         """
         _, _, _, _, value, *_ = visited_children
 
-        def set_text_visitor(value: str, locator: Locator, location: Location, value_at_location: Any) -> bool:
+        def set_text_visitor(
+            value: str, locator: Locator, location: Location, value_at_location: Any  # pylint: disable=W0613
+        ) -> bool:
             self._set_value(location, locator, value)
             self._logger.log(
                 self.trace_log_level,
@@ -692,13 +697,16 @@ class PQueryVisitor(NodeVisitor):
         """
         return self._de_quote(visited_children[4])
 
+    # pylint: disable=R1711
     def visit_set_json(self, node: Node, visited_children: Sequence[Any]) -> Any:  # pylint: disable=W0613
         """
         Handles the behaviour of `json` functions when arguments are provided.
         """
         _, _, _, _, value, *_ = visited_children
 
-        def set_json_visitor(value: Any, locator: Locator, location: Location, value_at_location: Any) -> bool:
+        def set_json_visitor(
+            value: Any, locator: Locator, location: Location, value_at_location: Any  # pylint: disable=W0613
+        ) -> bool:
             self._set_value(location, locator, value)
             self._logger.log(
                 self.trace_log_level,
@@ -730,7 +738,9 @@ class PQueryVisitor(NodeVisitor):
 
         values: list[str] = []
 
-        def get_text_visitor(locator: Locator, location: Location, value_at_location: Any) -> bool:
+        def get_text_visitor(
+            locator: Locator, location: Location, value_at_location: Any  # pylint: disable=W0613
+        ) -> bool:
             values.append(self._get_value(location, locator))
             return True
 
@@ -751,7 +761,9 @@ class PQueryVisitor(NodeVisitor):
 
         values: list[Any] = []
 
-        def get_json_visitor(locator: Locator, location: Location, value_at_location: Any) -> bool:
+        def get_json_visitor(
+            locator: Locator, location: Location, value_at_location: Any  # pylint: disable=W0613
+        ) -> bool:
             values.append(self._get_value(location, locator))
             return True
 
@@ -767,7 +779,7 @@ class PQueryVisitor(NodeVisitor):
     # | FUNCTIONS::FLOW CONTROL
     # +--------------------------------------------------------------------------------------------------------------+
 
-    def visit_if(self, node: Node, visited_children: Sequence[Any]) -> bool:
+    def visit_if(self, node: Node, visited_children: Sequence[Any]) -> bool:  # pylint: disable=W0613
         """
         Handles the behaviour of `if` functions when arguments are provided.
         """
@@ -776,7 +788,7 @@ class PQueryVisitor(NodeVisitor):
             raise PQueryError("Internal error: if not given conditional.")
         return conditional
 
-    def visit_if_then_else(self, node: Node, visited_children: Sequence[Any]) -> Any:
+    def visit_if_then_else(self, node: Node, visited_children: Sequence[Any]) -> Any:  # pylint: disable=W0613
         """
         Handles the behaviour of `if` functions when arguments are provided.
         """
@@ -888,7 +900,8 @@ class PQueryVisitor(NodeVisitor):
 
     @classmethod
     def _find_in_document_from_location(cls, locator: Locator, location: Location, visitor: DocumentVisitor) -> bool:
-
+        # TODO: refactor
+        # pylint: disable=too-many-return-statements,too-many-branches
         def _find_in_document_from_location_recursive(
             locator: Locator, locator_index: int, location: Location, base_location: Location, visitor: DocumentVisitor
         ) -> bool:
@@ -983,6 +996,7 @@ def default_replace_value_if_predicate(current_value: Any, pquery_statement_resu
     :param pquery_statement_result: The result of the pQuery statement.
     :return: True if the value should be replaced.
     """
+    # pylint: disable=too-many-return-statements
     if current_value is not None:
         return False
     if isinstance(pquery_statement_result, ReturnValue):
@@ -1285,7 +1299,7 @@ def render_fragment(
         locator.append(key_or_index)
         if isinstance(value, str):
             render_string_at(fragment, locator, location, word_separator)
-        elif isinstance(value, dict) or isinstance(value, list):
+        elif isinstance(value, (dict, list)):
             render_fragment(fragment, locator, value, word_separator)
         locator.pop()
 

@@ -59,6 +59,3 @@ class PQueryLocatorError(PQueryError):
     """
     Raised when a pQuery locator fails to parse.
     """
-
-    def __init__(self, message: str):
-        super().__init__(message)
