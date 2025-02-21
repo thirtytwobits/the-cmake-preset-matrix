@@ -77,7 +77,8 @@ choose_item     = "get" ws? "(" ws? value ws? ")"
 statement       = conditional / value
 value           = identifier / dbl_quoted / sgl_quoted / pquery_statement
 
-conditional     = (value ws? ("==" / "!=" ) ws? value) / true / false
+attr_compare    = "==" / "!=" / "$=" / "^="
+conditional     = (value ws? attr_compare ws? value) / true / false
 identifier      = ~r"[\w_-]+"
 dbl_quoted      = ~'"[^\"]*"'
 sgl_quoted      = ~"'[^\']*'"
@@ -262,6 +263,7 @@ class PQueryVisitor(NodeVisitor):
         self._selections: list[Selection] = [Selection([[0]], documents)]
         self._default_this = Selection([locator[:]], location)
         self._callstack: list[ReturnValue | None] = []
+        self._word_separator = word_separator
         formatter = logging.Formatter("%(name)s - %(message)s")
         handle = logging.StreamHandler() if log_handler is None else log_handler
         handle.setFormatter(formatter)
@@ -351,7 +353,13 @@ class PQueryVisitor(NodeVisitor):
         rhs = self._de_quote(statement[4])
         if operator == "==":
             return lhs == rhs
-        return lhs != rhs
+        if operator == "!=":
+            return lhs != rhs
+        if operator == "$=":
+            return lhs.endswith(rhs)
+        if operator == "^=":
+            return lhs.startswith(rhs)
+        raise PQueryError(f"Unknown operator: {operator}")
 
     # +--------------------------------------------------------------------------------------------------------------+
     # | SELECTORS

@@ -95,6 +95,14 @@ def test_if():
     pquery_render_fragment(test_document)
     assert test_document[0] is False
 
+    test_document = ["$(this).if('foobar' ^= 'foo')"]
+    pquery_render_fragment(test_document)
+    assert test_document[0] is True
+
+    test_document = ["$(this).if('foobar' $= 'bar')"]
+    pquery_render_fragment(test_document)
+    assert test_document[0] is True
+
     test_document = ["$(this).if(false)"]
     pquery_render_fragment(test_document)
     assert test_document[0] is False
