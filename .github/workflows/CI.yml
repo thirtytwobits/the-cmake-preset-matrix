@@ -10,12 +10,25 @@ on:
 
 jobs:
   validation:
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.6.4
-    with:
-      workdir: '.'
-
-  publish:
-    uses: microsoft/action-python/.github/workflows/publish.yml@0.6.4
-    secrets:
-      PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/opencyphal/toxic:tx22.4.3
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: lint
+      run: tox run -e lint
+    - name: test
+      run: tox run-parallel
+    - name: report
+      run: tox run -e report
+    - name: upload-coverage-reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: .tox/report/tmp/*
+    - name: upload-xunit-results
+      uses: actions/upload-artifact@v4
+      with:
+        name: xunit-results
+        path: .tox/py313-test/tmp/xunit-result.xml
