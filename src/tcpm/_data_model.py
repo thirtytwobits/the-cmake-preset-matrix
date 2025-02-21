@@ -136,7 +136,11 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     meta_presets: StructuredPresets = make_default_meta_presets()
     meta_presets.source = json_presets
     meta_presets.version = preset_matrix_regen_version
-    meta_presets.static = preset_matrix_regen_vendor_data["static"]
+    try:
+        meta_presets.static = preset_matrix_regen_vendor_data["static"]
+    except KeyError:
+        meta_presets.static = {}
+
     if "word_separator" in preset_matrix_regen_vendor_data:
         meta_presets.word_separator = preset_matrix_regen_vendor_data["word_separator"]
 

@@ -94,24 +94,12 @@ def get_schema(presets_schema_url: str) -> dict:
     return schema_object
 
 
-def _validate_json_schema(presets_schema_url: str, squelch_print: bool, force: bool, presets_source: dict) -> bool:
+def _validate_json_schema(presets_schema_url: str, presets_source: dict) -> bool:
     """
     Validates the preset file against certain assumptions this script makes. If jsonschema and requests is available
     the script will also validate the file against the CMake presets schema pulled from github.
     """
-    try:
-        import jsonschema  # type: ignore # pylint: disable=import-outside-toplevel
-    except ImportError:
-        if not force:
-            print("jsonschema python module is required to validate the schema.")
-            response = input("Okay to skip? (y/n): ").strip().lower()
-            if response != "y":
-                return False
-            return True
-        else:
-            if not squelch_print:
-                print("jsonschema is required to validate the schema. Skipping validation (--force).")
-            return True
+    import jsonschema  # type: ignore # pylint: disable=import-outside-toplevel
 
     schema = get_schema(presets_schema_url)
 
@@ -124,29 +112,29 @@ def _validate_json_schema(presets_schema_url: str, squelch_print: bool, force: b
     return True
 
 
-def validate_json_schema_for_presets(presets_schema_url: str, force: bool, presets_source: dict) -> bool:
-    return _validate_json_schema(presets_schema_url, False, force, presets_source)
+def validate_json_schema_for_presets(presets_schema_url: str, presets_source: dict) -> bool:
+    return _validate_json_schema(presets_schema_url, presets_source)
 
 
 def validate_json_schema_for_presets_unless(
-    no_schema_validation: bool, presets_schema_url: str, force: bool, presets_source: dict
+    no_schema_validation: bool, presets_schema_url: str, presets_source: dict
 ) -> bool:
     if no_schema_validation:
         print("Skipping schema validation (--no-schema-validation).")
         return True
-    return validate_json_schema_for_presets(presets_schema_url, force, presets_source)
+    return validate_json_schema_for_presets(presets_schema_url, presets_source)
 
 
-def validate_json_schema_for_result(presets_schema_url: str, force: bool, presets_source: dict) -> bool:
-    return _validate_json_schema(presets_schema_url, True, force, presets_source)
+def validate_json_schema_for_result(presets_schema_url: str, presets_source: dict) -> bool:
+    return _validate_json_schema(presets_schema_url, presets_source)
 
 
 def validate_json_schema_for_result_unless(
-    no_schema_validation: bool, presets_schema_url: str, force: bool, presets_source: dict
+    no_schema_validation: bool, presets_schema_url: str, presets_source: dict
 ) -> bool:
     if no_schema_validation:
         return True
-    return validate_json_schema_for_result(presets_schema_url, force, presets_source)
+    return validate_json_schema_for_result(presets_schema_url, presets_source)
 
 
 def _clean_source(

@@ -28,4 +28,6 @@ def test_cmake_presets():
     assert "test" in skip_list
     assert "configure" not in skip_list
 
+    assert "m32" == meta_presets.source["configurePresets"][2]["cacheVariables"]["MY_TARGET_PLATFORM"]
+
     print(json.dumps(meta_presets.source, indent=4))

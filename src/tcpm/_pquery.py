@@ -29,6 +29,19 @@ __pquery_detection_pattern__ = re.compile(r"^\s*\$\s*[\.\(]")
 __braced_text_pattern__ = re.compile(r"(?<!\\)\{(\s*\$\s*[\.\(].*?)(?<!\\)\}")
 
 # TODO: [(attribute)[^$!=]=(text)]
+# [name|=value] Selects elements that have the specified attribute with a value either equal to a given string or
+#               starting with that string followed by a word separator.
+# [name$=value] Selects elements that have the specified attribute with a value ending exactly with a given string. The
+#               comparison is case sensitive.
+# [name*=value] Selects elements that have the specified attribute with a value containing a given substring.
+# [name~=value] Selects elements that have the specified attribute with a value containing a given word, delimited by
+#               spaces.
+# [name=value] Selects elements that have the specified attribute with a value exactly equal to a certain value.
+# [name!=value] Select elements that either don’t have the specified attribute, or do have the specified attribute but
+#               not with a certain value.
+# [name^=value] Selects elements that have the specified attribute with a value beginning exactly with a given string.
+# [name]        Selects elements that have the specified attribute, with any value.
+# [name=”value”][name2=”value2″] Matches elements that match all of the specified attribute filters.
 
 __pquery_grammer__ = r"""
 pquery_statement = pq_core "(" ws? (literal_selector / selector_list) ws? ")" visitor_callstack pq_end
@@ -39,7 +52,7 @@ pq_end = ";"? ws?
 selector_list = ("'" (ws? quoted_selector)+ ws? "'") / ('"' (ws? quoted_selector)+ ws? '"')
 quoted_selector = name_selector / tag_selector
 literal_selector = this_selector
-visitor = set_text / get_text / split / replace / get_json / set_json / if / if_then_else / set_literal
+visitor = set_text / get_text / split / replace / get_json / set_json / if / if_then_else / set_literal / choose_item
 visitor_selector = ws? "." ws?
 visitor_call = visitor_selector visitor
 visitor_callstack = visitor_call*
@@ -59,11 +72,12 @@ get_json        = "json" ws? "(" ws? ")"
 set_json        = "json" ws? "(" ws? value ws? ")"
 if              = "if" ws? "(" ws? conditional ws? ")"
 if_then_else    = "if" ws? "(" ws? conditional ws? "," ws? value ws? "," ws? value ws? ")"
+choose_item     = "get" ws? "(" ws? value ws? ")"
 
 statement       = conditional / value
 value           = identifier / dbl_quoted / sgl_quoted / pquery_statement
 
-conditional     = (value ws? ("==" / "!=") ws? value) / true / false
+conditional     = (value ws? ("==" / "!=" ) ws? value) / true / false
 identifier      = ~r"[\w_-]+"
 dbl_quoted      = ~'"[^\"]*"'
 sgl_quoted      = ~"'[^\']*'"
@@ -239,6 +253,7 @@ class PQueryVisitor(NodeVisitor):
         locator: Locator,
         location: Location,
         documents: Location,
+        word_separator: str = "-",
         log_level: int = logging.WARNING,
         log_handler: logging.Handler | None = None,
     ) -> None:
@@ -570,6 +585,27 @@ class PQueryVisitor(NodeVisitor):
         else:
             what_to_split.value = what_to_split.value.split(splitter)
         return what_to_split
+
+    def visit_choose_item(self, node: Node, visited_children: Sequence[Any]) -> Any:
+        """
+        Handles the behaviour of `get` functions when arguments are provided.
+        """
+        chooser = self._de_quote(visited_children[4])
+        what_to_choose = self._get_last_return_value()
+        if what_to_choose is None or what_to_choose.value is None:
+            raise PQueryError("Nothing to get.")
+        chosen = what_to_choose.value
+        if isinstance(what_to_choose.value, dict):
+            try:
+                chosen = what_to_choose.value.get(chooser)
+            except KeyError as e:
+                raise PQueryError(f"Key not found: {node.full_text}") from e
+        else:
+            try:
+                chosen = what_to_choose.value[int(chooser)]
+            except IndexError as e:
+                raise PQueryError(f"Index out of range: {node.full_text}") from e
+        return chosen
 
     def visit_replace(self, node: Node, visited_children: Sequence[Any]) -> Any:  # pylint: disable=W0613
         """
@@ -1107,7 +1143,9 @@ def locate(locator: Locator, location: Location) -> Location:
     return location
 
 
-def render_string_at(fragment: Location, locator: Locator, start_at: Location | None = None) -> bool:
+def render_string_at(
+    fragment: Location, locator: Locator, start_at: Location | None = None, word_separator: str = "-"
+) -> bool:
     """
     Renders any pquery statements embedded in a string at a given location.
 
@@ -1149,7 +1187,7 @@ def render_string_at(fragment: Location, locator: Locator, start_at: Location | 
     for i, statement in enumerate(statements):
         if detect(statement):
             _safe_set(start_at, key_or_index, statement)
-            pq = PQueryVisitor([key_or_index], start_at, fragment)
+            pq = PQueryVisitor([key_or_index], start_at, fragment, word_separator=word_separator)
             tree = pq.grammer.parse(statement.strip())
             _safe_set(start_at, key_or_index, None)
             _safe_set(statements, i, None)
@@ -1165,7 +1203,12 @@ def render_string_at(fragment: Location, locator: Locator, start_at: Location | 
     return True
 
 
-def render_fragment(fragment: Location, locator_maybe: Locator | None = None, start_at: Location | None = None) -> None:
+def render_fragment(
+    fragment: Location,
+    locator_maybe: Locator | None = None,
+    start_at: Location | None = None,
+    word_separator: str = "-",
+) -> None:
     """
     Renders all pQuery statements in a fragment of json (no schema implied).
 
@@ -1217,6 +1260,7 @@ def render_fragment(fragment: Location, locator_maybe: Locator | None = None, st
     :param start_at: The location within the fragment to start rendering from. If None then the locator is used to find
                      the starting location. If the locator is None then this argument is ignored and the root of the
                      fragment is used.
+    :param word_separator: The separator to use where specified in comparators. The default follows javascript.
     :raises PQueryError: If pquery statements within the fragment are malformed.
     :raises PQueryLocatorError: If the locator address cannot be found within the given fragment.
     """
@@ -1232,9 +1276,9 @@ def render_fragment(fragment: Location, locator_maybe: Locator | None = None, st
     def process_value(location: Location, key_or_index: str | int, value: Any) -> None:
         locator.append(key_or_index)
         if isinstance(value, str):
-            render_string_at(fragment, locator, location)
+            render_string_at(fragment, locator, location, word_separator)
         elif isinstance(value, dict) or isinstance(value, list):
-            render_fragment(fragment, locator, value)
+            render_fragment(fragment, locator, value, word_separator)
         locator.pop()
 
     if isinstance(start_at, dict):
@@ -1245,11 +1289,12 @@ def render_fragment(fragment: Location, locator_maybe: Locator | None = None, st
             process_value(start_at, i, value)
 
 
-def render(document_or_path: dict | Path) -> dict:
+def render(document_or_path: dict | Path, word_separator: str = "-") -> dict:
     """
     Renders all pQuery statements in a CMakePresets.json document.
 
     :param document_or_path: The document to render. Expansions are done in place.
+    :param word_separator: The separator to use where specified in comparators. The default follows javascript.
     :return: The rendered document.
     :raises PQueryError: If pquery statements within the document are malformed.
     :raises FileNotFoundError: If the document path cannot be found.
@@ -1268,7 +1313,7 @@ def render(document_or_path: dict | Path) -> dict:
     if "vendor" in document and __vendor_section_key__ in document["vendor"]:
         locator.append("vendor")
         locator.append(__vendor_section_key__)
-        render_fragment(documents, locator)
+        render_fragment(documents, locator, word_separator=word_separator)
         locator.pop()
         locator.pop()
 
@@ -1277,7 +1322,7 @@ def render(document_or_path: dict | Path) -> dict:
             locator.append(key)
             for i, _ in enumerate(value):
                 locator.append(i)
-                render_fragment(documents, locator)
+                render_fragment(documents, locator, word_separator=word_separator)
                 locator.pop()
             locator.pop()
 

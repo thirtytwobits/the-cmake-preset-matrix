@@ -33,10 +33,12 @@
             "word-separator": "-",
             "static": {
                 "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
-                "toolchainSuffix": ".cmake"
+                "toolchainSuffix": ".cmake",
+                "firstConfiguration": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';').get(0)"
             },
             "preset-groups": {
                 "configure": {
+                    "name": "preset-group-config",
                     "prefix": "config",
                     "common": [
                         "config-common"
@@ -52,7 +54,7 @@
                         "toolchain": {
                             "toolchainFile": "{static[toolchainBasePath]}{parameter}{static[toolchainSuffix]}",
                             "cacheVariables": {
-                                "MY_TARGET_PLATFORM": "$(this).if('gcc-32' == '{parameter}', 'm32', 'native')"
+                                "MY_TARGET_PLATFORM": "{pq}(this).if('gcc-32' == '{parameter}', 'm32', 'native')"
                             }
                         }
                     }
@@ -61,7 +63,7 @@
                     "prefix": "build",
                     "parameters": {
                         "configuration": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')",
-                        "toolchain": "$('vendor preset-matrix-regen preset-groups configure parameters toolchain').json()"
+                        "toolchain": "$('#preset-group-config parameters toolchain').json()"
                     },
                     "shape": {
                         "configuration": {
@@ -77,7 +79,7 @@
                 "workflow": {
                     "prefix": "workflow",
                     "parameters": {
-                        "toolchain": "$('vendor preset-matrix-regen preset-groups configure parameters toolchain').json()"
+                        "toolchain": "$('#preset-group-config parameters toolchain').json()"
                     },
                     "shape": {
                         "toolchain": {

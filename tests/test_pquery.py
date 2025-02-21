@@ -203,6 +203,17 @@ def test_split():
     assert test_document[1] == ["one", "two", "three"]
 
 
+def test_index():
+    """
+    Tests splitting a string.
+    """
+    test_document = ["one;two;three", "$('0').text().split(';').get(1)", ""]
+    pquery_render_fragment(test_document)
+    assert test_document[0] == "one;two;three"
+    assert len(test_document[1]) == 3
+    assert test_document[1] == "two"
+
+
 def test_get_json():
     """
     Tests the json function as a getter.

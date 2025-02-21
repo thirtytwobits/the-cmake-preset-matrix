@@ -30,7 +30,7 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
             skip_list.add(group_field.name)
 
     clean_source("configure", clean, True, meta_presets)
-    render_pquery(meta_presets.source)
+    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
     hidden_preset_index = make_parameter_presets(
         "configure",
         True,
@@ -42,7 +42,7 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
     )
 
     clean_source("configure", clean, False, meta_presets)
-    render_pquery(meta_presets.source)
+    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
     visible_preset_index = make_matrix_presets(
         "configure",
         False,
@@ -64,7 +64,7 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
             continue
 
         clean_source(group, clean, False, meta_presets)
-        render_pquery(meta_presets.source)
+        render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
         preset_index = make_matrix_presets(
             group,
             False,
@@ -73,6 +73,6 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
         reclean_source(group, clean, False, meta_presets)
         meta_presets.source[groupKey] = merge_preset_list(meta_presets.source[groupKey], preset_index)
 
-    render_pquery(meta_presets.source)
+    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
 
     return skip_list
