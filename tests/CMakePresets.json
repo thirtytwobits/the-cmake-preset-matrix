@@ -28,7 +28,7 @@
     "buildPresets": [],
     "workflowPresets": [],
     "vendor": {
-        "preset-matrix-regen": {
+        "tcpm": {
             "version": 1,
             "word-separator": "-",
             "static": {

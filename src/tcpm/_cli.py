@@ -107,9 +107,9 @@ def make_parser() -> argparse.ArgumentParser:
             https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html for details on cmake presets.
 
             This script is driven by configuration in the 'vendor' section of the CMakePresets.json file. The
-            'preset-matrix-regen' section of the 'vendor' section is used to generate the presets. The
-            'preset-matrix-regen' section must contain the following keys:
-            - version: The version of the 'preset-matrix-regen' section. The current version is 1.
+            'tcpm' section of the 'vendor' section is used to generate the presets. The
+            'tcpm' section must contain the following keys:
+            - version: The version of the 'tcpm' section. The current version is 1.
             - word_separator: The word separator to use when generating preset names.
             - preset-groups: A dictionary of preset groups. Each group must contain the following keys:
                 - prefix:   The prefix to use when generating preset names. The default is the group name followed by

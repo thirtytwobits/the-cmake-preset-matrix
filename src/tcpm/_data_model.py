@@ -13,7 +13,7 @@ from ._errors import VendorDataError
 
 __vendor_data_version__ = 1
 __default_word_separator__ = "-"
-__vendor_section_key__ = "preset-matrix-regen"
+__vendor_section_key__ = "tcpm"
 
 
 @dataclass
