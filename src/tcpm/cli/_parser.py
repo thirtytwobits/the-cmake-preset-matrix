@@ -10,6 +10,8 @@ import argparse
 import textwrap
 from pathlib import Path
 
+__script_name__ = "tcpm"
+
 
 def make_parser() -> argparse.ArgumentParser:
     """
@@ -95,7 +97,6 @@ def make_parser() -> argparse.ArgumentParser:
         "--template-file",
         "-t",
         type=Path,
-        default=Path("CMakePresets.json"),
         help=textwrap.dedent(
             """
             A file to use as a template for the presets file. The template file is used to generate the presets file
@@ -146,6 +147,13 @@ def make_parser() -> argparse.ArgumentParser:
         "-nb",
         action="store_true",
         help="Do not create a backup when overwriting the presets file.",
+    )
+
+    parser.add_argument(
+        "--stdout",
+        "-s",
+        action="store_true",
+        help="Print the generated presets to standard output instead of writing to a file.",
     )
 
     return parser

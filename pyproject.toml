@@ -51,7 +51,7 @@ schema = ["jsonschema>=4.23.0"]
 docs = ["furo", "sphinx-argparse", "sphinxemoji", "sphinx"]
 
 [project.urls]
-Documentation = "https://github.com/thirtytwobits/the-cmake-preset-matrix/tree/main#readme"
+Documentation = "https://thirtytwobits.github.io/the-cmake-preset-matrix"
 Source = "https://github.com/thirtytwobits/the-cmake-preset-matrix"
 Tracker = "https://github.com/thirtytwobits/the-cmake-preset-matrix/issues"
 
@@ -125,7 +125,7 @@ exclude = ["^test_.*\\.py$"]
 [tool.pytest.ini_options]
 addopts = ["-p", "no:doctest", "--no-cov"]
 pythonpath = ["src"]
-testpaths = ["tests", "src"]
+testpaths = ["tests", "src", "docs"]
 junit_family = "xunit2"
 norecursedirs = ["build*", ".*", "__*"]
 log_level = "DEBUG"

@@ -39,7 +39,13 @@
     ],
     "cSpell.allowCompoundWords": true,
     "cSpell.caseSensitive": false,
-    "cSpell.language": "en-GB",
+    "cSpell.language": "en-gb",
+    "cSpell.overrides": [
+        {
+            "filename": "**/*.rst",
+            "languageId": "python"
+        },
+    ],
     "cSpell.languageSettings": [
         {
             "languageId": "toml",

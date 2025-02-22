@@ -6,12 +6,16 @@
 Core functions for transforming presets.
 """
 
+import logging
 from dataclasses import fields
 
 from ._data_model import StructuredPresets
 from ._generators import make_matrix_presets, make_parameter_presets
 from ._pquery import render as render_pquery
 from ._utility import clean_source, merge_preset_list, reclean_source
+from .cli._parser import __script_name__
+
+_core_logger = logging.getLogger(__script_name__)
 
 
 def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
@@ -60,7 +64,7 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
             # configure is special because that's where we do the matrix generation.
             continue
         if group in skip_list:
-            print(f"Skipping group: {groupKey} (missing in source document)")
+            _core_logger.debug("Skipping group: %s (missing in source document)", groupKey)
             continue
 
         clean_source(group, clean, False, meta_presets)

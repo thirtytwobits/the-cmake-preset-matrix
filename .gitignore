@@ -137,3 +137,6 @@ dmypy.json
 
 # pytest
 .pytest_cache
+
+# bak files
+*.bak

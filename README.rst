@@ -2,11 +2,9 @@
  TCPM: (the) Cmake Preset Matrix
 ################################################
 
-.. warning::
-
-    This is pre-alpha software. Use at your own risk.
-
 |badge_build|_ |badge_pypi_support|_ |badge_pypi_version|_
+
+
 
 .. |tcpm_logo| image:: /docs/static/SVG/matrix_logo.svg
    :width: 50px

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import functools
 import json
+import logging
 import shutil
 import urllib.request
 from pathlib import Path
@@ -16,6 +17,9 @@ from typing import Any
 
 from ._data_model import StructuredPresets
 from ._errors import DataError
+from .cli._parser import __script_name__
+
+_utility_logger = logging.getLogger(__script_name__)
 
 
 def reduce_preset_name(group: str, configuration: tuple[tuple[str, str], ...], meta_presets: StructuredPresets) -> str:
@@ -108,7 +112,7 @@ def _validate_json_schema(presets_schema_url: str, presets_source: dict) -> bool
     try:
         jsonschema.validate(instance=presets_source, schema=schema)
     except jsonschema.ValidationError as e:
-        print(f"JSON schema validation error: {e.message}")
+        _utility_logger.warning("JSON schema validation error: %s", e.message)
         return False
 
     return True
@@ -122,7 +126,7 @@ def validate_json_schema_for_presets_unless(
     no_schema_validation: bool, presets_schema_url: str, presets_source: dict
 ) -> bool:
     if no_schema_validation:
-        print("Skipping schema validation (--no-schema-validation).")
+        _utility_logger.info("Skipping schema validation (--no-schema-validation).")
         return True
     return validate_json_schema_for_presets(presets_schema_url, presets_source)
 

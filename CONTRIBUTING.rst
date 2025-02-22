@@ -15,13 +15,39 @@ your dev environment setup.
 Tools
 ************************************************
 
-tox devenv -e local
+tox
 ================================================
 
+Starting clean:
+
+    git clean -Xdf
+
+Setting up a local development environment:
 
     tox --devenv .venv-py3.13 -e py313
     source .venv-py3.13/bin/activate
     code .
+
+Running the tests:
+
+    tox run-parallel
+
+Generating coverage reports:
+
+    tox run -e report
+
+.. note::
+
+    Report generation will fail if you haven't run the tests first to generate the intermediate artifacts this setup
+    consumes.
+
+Running linters:
+
+    tox run -e lint
+
+Building the docs:
+
+    tox run -e docs
 
 
 pre-commit hooks

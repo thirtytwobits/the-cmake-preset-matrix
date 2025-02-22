@@ -48,8 +48,8 @@ html_theme = "furo"
 
 html_context = {
     "display_github": True,
-    "github_user": "OpenCyphal",
-    "github_repo": "nunavut",
+    "github_user": "thirtytwobits",
+    "github_repo": "the-cmake-preset-matrix",
     "github_version": "main",
     "conf_py_path": "",
 }

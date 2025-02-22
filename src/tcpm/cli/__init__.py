@@ -7,6 +7,7 @@ CLI for the TCPM tool.
 """
 
 import json
+import logging
 import re
 import sys
 from dataclasses import fields
@@ -16,9 +17,9 @@ from typing import Any
 from .._core import transform_in_place
 from .._data_model import make_meta_presets
 from .._utility import make_backup, validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
-from ._parser import make_parser
+from ._parser import __script_name__, make_parser
 
-__script_name__ = "tcpm"
+_cli_logger = logging.getLogger(__script_name__)
 
 # TODO: This is a placeholder for localization.
 t = str
@@ -92,6 +93,41 @@ def binary_user_prompt_unless(
     return InteractiveResult.POSITIVE
 
 
+def write_to_file(args: Any, meta_presets: Any) -> int:
+    if args.presets_file.exists():
+        # are you sure?
+        response = binary_user_prompt_unless(
+            f"{args.presets_file} already exists. Overwrite? (y/n): ",
+            re.compile("y", re.IGNORECASE),
+            force=args.force,
+            verbose=args.verbose,
+            non_interactive=args.non_interactive,
+            negative_text="Operation cancelled.",
+        )
+        if response == InteractiveResult.NEGATIVE:
+            return 1
+
+    if not args.no_backup:
+        if not make_backup(args.presets_file, args.backup_file_suffix).exists():
+            _cli_logger.warning(
+                "Backup file %s%s could not be created (use --no-backup to skip).",
+                args.presets_file,
+                args.backup_file_suffix,
+            )
+            return 1
+
+    with args.presets_file.open("w", encoding="UTF-8") as f:
+        f.write(json.dumps(meta_presets.source, indent=args.indent))
+        f.write("\n")
+
+    return 0
+
+
+def write_to_stdout(args: Any, meta_presets: Any) -> int:
+    print(json.dumps(meta_presets.source, indent=args.indent))
+    return 0
+
+
 def cli_main(args: Any | None = None) -> int:
     """
     Idempotent (mostly) generation of CMake presets based the contents of the vendor section of the presets file.
@@ -102,7 +138,19 @@ def cli_main(args: Any | None = None) -> int:
 
     args = make_parser().parse_args(args)
 
-    with args.template_file.open("r", encoding="UTF-8") as f:
+    if args.stdout:
+        logging.Logger.setLevel(_cli_logger, logging.ERROR)
+        if not args.non_interactive:
+            _cli_logger.warning(
+                "Writing to stdout in interactive mode. Use --non-interactive to ensure only JSON is output."
+            )
+    elif args.verbose:
+        logging.Logger.setLevel(_cli_logger, logging.DEBUG)
+    else:
+        logging.Logger.setLevel(_cli_logger, logging.INFO)
+
+    source_file = args.template_file if args.template_file is not None else args.presets_file
+    with source_file.open("r", encoding="UTF-8") as f:
         json_presets = json.load(f)
 
     meta_presets = make_meta_presets(json_presets)
@@ -155,29 +203,7 @@ def cli_main(args: Any | None = None) -> int:
             if response == InteractiveResult.NEGATIVE:
                 return 1
 
-    if args.presets_file.exists():
-        # are you sure?
-        response = binary_user_prompt_unless(
-            f"{args.presets_file} already exists. Overwrite? (y/n): ",
-            re.compile("y", re.IGNORECASE),
-            force=args.force,
-            verbose=args.verbose,
-            non_interactive=args.non_interactive,
-            negative_text="Operation cancelled.",
-        )
-        if response == InteractiveResult.NEGATIVE:
-            return 1
-
-    if not args.no_backup:
-        if not make_backup(args.presets_file, args.backup_file_suffix).exists():
-            print(
-                f"Backup file {args.presets_file}{args.backup_file_suffix} could not be created "
-                "(use --no-backup to skip)."
-            )
-            return 1
-
-    with args.presets_file.open("w", encoding="UTF-8") as f:
-        f.write(json.dumps(meta_presets.source, indent=args.indent))
-        f.write("\n")
-
-    return 0
+    if args.stdout:
+        return write_to_stdout(args, meta_presets)
+    else:
+        return write_to_file(args, meta_presets)
