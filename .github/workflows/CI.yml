@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/opencyphal/toxic:tx22.4.3
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.2.2
       with:
         submodules: true
     - name: lint
@@ -26,12 +26,12 @@ jobs:
     - name: report
       run: tox run -e report
     - name: upload-coverage-reports
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: coverage-reports
         path: .tox/report/tmp/*
     - name: upload-xunit-results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: xunit-results
         path: .tox/py313-test/tmp/xunit-result.xml
