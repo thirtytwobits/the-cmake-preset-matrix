@@ -13,11 +13,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.2.2
       with:
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.4.0
       with:
         python-version: "3.x"
     - name: Install pypa/build
@@ -34,7 +34,7 @@ jobs:
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Store the distribution packages
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: python-package-distributions
         path: dist/
@@ -53,12 +53,12 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
      - name: Download all the dists
-       uses: actions/download-artifact@v4
+       uses: actions/download-artifact@v4.1.8
        with:
          name: python-package-distributions
          path: dist/
      - name: Publish distribution 📦 to PyPI
-       uses: pypa/gh-action-pypi-publish@release/v1
+       uses: pypa/gh-action-pypi-publish@v1.12.4
 
   github-release:
     name: >-
@@ -73,7 +73,7 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.8
       with:
         name: python-package-distributions
         path: dist/
@@ -117,11 +117,11 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.8
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution 📦 to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
         repository-url: https://test.pypi.org/legacy/
