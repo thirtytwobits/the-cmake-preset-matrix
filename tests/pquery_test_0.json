@@ -25,11 +25,15 @@
             "static": {
                 "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
                 "toolchainSuffix": ".cmake",
-                "configurationTypeList": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
+                "configurationTypeList": "$('#config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
             },
+            "onLoad": [
+                "$('#preset-group-build parameters toolchain').json($('#preset-group-configure parameters toolchain').json())"
+            ],
             "preset-groups": {
                 "configure": {
                     "prefix": "config",
+                    "name": "preset-group-configure",
                     "common": [
                         "config-common"
                     ],
@@ -43,6 +47,19 @@
                         "toolchain": {
                             "toolchainFile": "{static:toolchainBasePath}{parameter}{static:toolchainSuffix}"
                         }
+                    }
+                },
+                "build": {
+                    "prefix": "build",
+                    "name": "preset-group-build",
+                    "common": [
+                        "config-common"
+                    ],
+                    "parameters": {
+                        "toolchain": []
+                    },
+                    "shape": {
+                        "toolchain": {}
                     }
                 }
             }

@@ -107,7 +107,7 @@ exclude = [
     "pywin32",
     "tests",
 ]
-ignore = ["E722", "B001", "W503", "E203"]
+ignore = ["E722", "B001", "W503", "E203", "E501"]
 
 [tool.mypy]
 warn_return_any = true

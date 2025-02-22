@@ -263,6 +263,17 @@ def test_render_string_with_multiple_statements():
     assert test_document[0].format(and_word="and") == "one, two, and three"
 
 
+def test_exp():
+    """
+    Tests the exp method
+    """
+    pquery_statement = "$('1').text('one').exp()"
+    test_document = [pquery_statement, ""]
+    pquery_render_string_at(test_document, [0])
+    assert test_document[0] == pquery_statement
+    assert test_document[1] == "one"
+
+
 def test_render_presets():
     """
     Test rendering a CMakePresets.json file with pQuery statements.
@@ -276,3 +287,11 @@ def test_render_presets():
         "RelSize",
         "Debug",
     ]
+
+    config_toolchains = result["vendor"][__vendor_section_key__]["preset-groups"]["configure"]["parameters"][
+        "toolchain"
+    ]
+    assert len(config_toolchains) == 2
+    build_toolchains = result["vendor"][__vendor_section_key__]["preset-groups"]["build"]["parameters"]["toolchain"]
+    assert len(build_toolchains) == 2
+    assert config_toolchains == build_toolchains

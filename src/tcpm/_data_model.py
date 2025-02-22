@@ -64,6 +64,7 @@ class StructuredPresets:
     version: int
     static: dict
     word_separator: str
+    on_load: list[str]
     groups: Presets
 
     def __getitem__(self, field_name: str) -> Any:
@@ -90,6 +91,7 @@ def make_default_meta_presets() -> StructuredPresets:
         version=__vendor_data_version__,
         static={},
         word_separator=__default_word_separator__,
+        on_load=[],
         groups=groups,
     )
     for preset_group_name, _ in groups.__annotations__.items():
@@ -144,6 +146,11 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     if "word_separator" in preset_matrix_regen_vendor_data:
         meta_presets.word_separator = preset_matrix_regen_vendor_data["word_separator"]
 
+    if "on_load" in preset_matrix_regen_vendor_data:
+        if isinstance(preset_matrix_regen_vendor_data["on_load"], str):
+            meta_presets.on_load = [preset_matrix_regen_vendor_data["on_load"]]
+        else:
+            meta_presets.on_load = preset_matrix_regen_vendor_data["on_load"]
     for preset_group_name, preset_group in preset_matrix_regen_vendor_data["preset-groups"].items():
         group = getattr(meta_presets.groups, preset_group_name)
         group.name = preset_group_name

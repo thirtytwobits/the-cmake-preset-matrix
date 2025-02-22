@@ -53,7 +53,7 @@ pq_end = ";"? ws?
 selector_list = ("'" (ws? quoted_selector)+ ws? "'") / ('"' (ws? quoted_selector)+ ws? '"')
 quoted_selector = name_selector / tag_selector
 literal_selector = this_selector
-visitor = set_text / get_text / split / replace / get_json / set_json / if / if_then_else / set_literal / choose_item
+visitor = set_text / get_text / split / replace / get_json / set_json / if / if_then_else / set_literal / choose_item / get_exp
 visitor_selector = ws? "." ws?
 visitor_call = visitor_selector visitor
 visitor_callstack = visitor_call*
@@ -71,6 +71,7 @@ set_text        = "text" ws? "(" ws? value ws? ")"
 get_text        = "text" ws? "(" ws? ")"
 get_json        = "json" ws? "(" ws? ")"
 set_json        = "json" ws? "(" ws? value ws? ")"
+get_exp         = "exp" ws? "(" ws? ")"
 if              = "if" ws? "(" ws? conditional ws? ")"
 if_then_else    = "if" ws? "(" ws? conditional ws? "," ws? value ws? "," ws? value ws? ")"
 choose_item     = "get" ws? "(" ws? value ws? ")"
@@ -775,6 +776,12 @@ class PQueryVisitor(NodeVisitor):
         self._logger.log(self.trace_log_level, "get_json %d: %s", len(self._selection_context), result)
         return result
 
+    def visit_get_exp(self, node: Node, visited_children: Sequence[Any]) -> Any:  # pylint: disable=W0613
+        """
+        Handles the behaviour of `exp` functions when no arguments are provided.
+        """
+        return node.full_text
+
     # +--------------------------------------------------------------------------------------------------------------+
     # | FUNCTIONS::FLOW CONTROL
     # +--------------------------------------------------------------------------------------------------------------+
@@ -1335,6 +1342,10 @@ def render(document_or_path: dict | Path, word_separator: str = "-") -> dict:
     if "vendor" in document and __vendor_section_key__ in document["vendor"]:
         locator.append("vendor")
         locator.append(__vendor_section_key__)
+        if "onLoad" in document["vendor"][__vendor_section_key__]:
+            locator.append("onLoad")
+            render_fragment(documents, locator, word_separator=word_separator)
+            locator.pop()
         render_fragment(documents, locator, word_separator=word_separator)
         locator.pop()
         locator.pop()
