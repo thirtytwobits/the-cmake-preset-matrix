@@ -1,4 +1,4 @@
-name: Publish tcpm ⊹ to PyPI and TestPyPI
+name: Publish tcpm ⊹ to 🐍 PyPI and TestPyPI
 permissions:
   contents: read
   pull-requests: write
