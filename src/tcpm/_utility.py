@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import functools
 import json
+import shutil
 import urllib.request
+from pathlib import Path
 from typing import Any
 
 from ._data_model import StructuredPresets
@@ -169,3 +171,20 @@ def clean_source(group: str, clean_level: int | None, hidden: bool, meta_presets
 
 def reclean_source(group: str, clean_level: int | None, hidden: bool, meta_presets: StructuredPresets) -> None:
     _clean_source(group, clean_level, False, hidden, meta_presets)
+
+
+def make_backup(presets_file: Path, backup_suffix: str) -> Path:
+    """
+    Create a backup of the presets file. The backup file will have the same name as the presets file with the
+    specified backup suffix appended to the file extension. If a backup file with the same name already exists, a
+    number will be appended to the suffix to make the backup file name unique.
+    """
+    backup_count = 0
+    while True:
+        backup_file = presets_file.with_stem(f"{presets_file.stem}_{backup_count:02}").with_suffix(backup_suffix)
+        if not backup_file.exists():
+            break
+        backup_count += 1
+
+    shutil.copy2(presets_file, backup_file)
+    return backup_file

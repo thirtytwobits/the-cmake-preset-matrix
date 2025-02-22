@@ -18,7 +18,7 @@ from typing import Any
 
 from ._core import transform_in_place
 from ._data_model import make_meta_presets
-from ._utility import validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
+from ._utility import make_backup, validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
 
 __script_name__ = "tcpm"
 
@@ -110,7 +110,6 @@ def make_parser() -> argparse.ArgumentParser:
             'tcpm' section of the 'vendor' section is used to generate the presets. The
             'tcpm' section must contain the following keys:
             - version: The version of the 'tcpm' section. The current version is 1.
-            - word_separator: The word separator to use when generating preset names.
             - preset-groups: A dictionary of preset groups. Each group must contain the following keys:
                 - prefix:   The prefix to use when generating preset names. The default is the group name followed by
                             the word separator.
@@ -192,6 +191,20 @@ def make_parser() -> argparse.ArgumentParser:
         help="Do not prompt the user for input.",
     )
 
+    parser.add_argument(
+        "--backup-file-suffix",
+        type=str,
+        default=".bak",
+        help="The suffix to append to the backup file.",
+    )
+
+    parser.add_argument(
+        "--no-backup",
+        "-nb",
+        action="store_true",
+        help="Do not create a backup when overwriting the presets file.",
+    )
+
     return parser
 
 
@@ -199,6 +212,7 @@ def cli_main(args: Any | None = None) -> int:
     """
     Idempotent (mostly) generation of CMake presets based the contents of the vendor section of the presets file.
     """
+    # pylint: disable=too-many-branches, too-many-return-statements
     if args is None:
         args = sys.argv[1:]
 
@@ -257,7 +271,7 @@ def cli_main(args: Any | None = None) -> int:
             if response == InteractiveResult.NEGATIVE:
                 return 1
 
-    if not args.force and args.presets_file.exists():
+    if args.presets_file.exists():
         # are you sure?
         response = binary_user_prompt_unless(
             f"{args.presets_file} already exists. Overwrite? (y/n): ",
@@ -268,6 +282,14 @@ def cli_main(args: Any | None = None) -> int:
             negative_text="Operation cancelled.",
         )
         if response == InteractiveResult.NEGATIVE:
+            return 1
+
+    if not args.no_backup:
+        if not make_backup(args.presets_file, args.backup_file_suffix).exists():
+            print(
+                f"Backup file {args.presets_file}{args.backup_file_suffix} could not be created "
+                "(use --no-backup to skip)."
+            )
             return 1
 
     with args.presets_file.open("w", encoding="UTF-8") as f:
