@@ -7,7 +7,6 @@
 import pytest
 
 from tcpm import cli_main
-from pathlib import Path
 
 
 def test_hello():

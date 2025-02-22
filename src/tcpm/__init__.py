@@ -15,7 +15,7 @@ Based on work originally done by @dixonsco on the [OpenCyphal](https://opencypha
 # | LIBRARY EXPORTS                                                                                                   |
 # + ------------------------------------------------------------------------------------------------------------------+
 
-from ._cli import cli_main
+from .cli import cli_main
 from ._data_model import PresetGroup
 from ._data_model import Presets
 from ._data_model import StructuredPresets

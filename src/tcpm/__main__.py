@@ -8,6 +8,6 @@ Command line script.
 
 import sys
 
-from ._cli import cli_main
+from .cli import cli_main
 
 sys.exit(cli_main())

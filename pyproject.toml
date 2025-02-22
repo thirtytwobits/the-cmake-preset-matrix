@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "tcpm"
 authors = [{ name = "Scott Dixon", email = "dixonsco@amazon.com" }]
 description = "Generate CMakePresets.json configuration and build presets from the cartesian product of a set of parameters."
-readme = "README.md"
+readme = "README.rst"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -48,6 +48,7 @@ test = [
     "sybil[pytest]",
 ]
 schema = ["jsonschema>=4.23.0"]
+docs = ["furo", "sphinx-argparse", "sphinxemoji", "sphinx"]
 
 [project.urls]
 Documentation = "https://github.com/thirtytwobits/the-cmake-preset-matrix/tree/main#readme"
@@ -249,6 +250,14 @@ commands = [
         "-o",
         "{envtmpdir}/coverage.xml",
     ],
+]
+
+[tool.tox.env.docs]
+description = "Generate HTML documentation."
+extras=["docs"]
+allowlist_externals = ["sphinx-build"]
+commands = [
+    ["sphinx-build", "-W", "-b", "html",  "{toxinidir}", "{envtmpdir}"]
 ]
 
 # +---------------------------------------------------------------------------+

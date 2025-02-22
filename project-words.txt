@@ -1,10 +1,15 @@
 config
+Cyphal
 dixonsco
 envlist
 envtmpdir
+imgmath
 norecursedirs
+pypi
 pquery
 reclean
 regen
 tcpm
+thirtytwobits
+toctree
 xunit

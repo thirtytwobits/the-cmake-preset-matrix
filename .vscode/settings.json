@@ -52,7 +52,7 @@
     "cSpell.customDictionaries": {
         "tcpm": {
             "name": "project-words",
-            "path": "${workspaceFolder}/.vscode/project-words.txt",
+            "path": "${workspaceFolder}/project-words.txt",
             "description": "Words used in this project.",
             "addWords": true
         }

@@ -17,6 +17,29 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.17.2
+    hooks:
+      - id: cspell
+        name: check changed files
+        args:
+          - --no-must-find-files
+          - --exclude conf.py
+          - --exclude "**/*.svg"
+          - --exclude "**/.gitignore"
+          - --exclude ".pre-commit-config.yaml"
+          - --exclude ".vscode/**"
+      - id: cspell
+        name: check commit message spelling
+        args:
+          - --no-must-find-files
+          - --no-progress
+          - --no-summary
+          - --files
+          - .git/COMMIT_EDITMSG
+        stages: [commit-msg]
+        always_run: true
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.31.0
     hooks:
