@@ -33,7 +33,7 @@ with open(".gitignore", encoding="utf-8") as gif:
         if len(stripped) > 0 and not stripped.startswith("#"):
             exclude_patterns.append(stripped)
 
-language = "en-UK"
+language = "en"
 
 source_suffix = [".rst"]
 

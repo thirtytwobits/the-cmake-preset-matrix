@@ -25,6 +25,8 @@ jobs:
       run: tox run-parallel
     - name: report
       run: tox run -e report
+    - name: docs
+      run: tox run -e docs
     - name: upload-coverage-reports
       uses: actions/upload-artifact@v4.6.1
       with:
@@ -35,3 +37,8 @@ jobs:
       with:
         name: xunit-results
         path: .tox/py313-test/tmp/xunit-result.xml
+    - name: upload-html-docs
+      uses: actions/upload-artifact@v4.6.1
+      with:
+        name: html-docs
+        path: .tox/docs/tmp/*
