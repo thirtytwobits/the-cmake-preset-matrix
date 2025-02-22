@@ -165,6 +165,22 @@ def make_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--template-file",
+        "-t",
+        type=Path,
+        default=Path("CMakePresets.json"),
+        help=textwrap.dedent(
+            """
+            A file to use as a template for the presets file. The template file is used to generate the presets file
+            if it does not exist. If the template file and the presets file are the same, the presets file is updated
+            in place using itself as the template. TCPM is designed to be idempotent, so using a presets file as its
+            own template will not change the file unless changes are made that affect preset generation.
+
+    """
+        ).lstrip(),
+    )
+
+    parser.add_argument(
         "--force",
         "-f",
         action="store_true",
@@ -218,7 +234,7 @@ def cli_main(args: Any | None = None) -> int:
 
     args = make_parser().parse_args(args)
 
-    with args.presets_file.open("r", encoding="UTF-8") as f:
+    with args.template_file.open("r", encoding="UTF-8") as f:
         json_presets = json.load(f)
 
     meta_presets = make_meta_presets(json_presets)
