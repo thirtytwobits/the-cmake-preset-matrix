@@ -99,6 +99,8 @@ def make_parser() -> argparse.ArgumentParser:
     Define and parse the command line arguments.
     """
 
+    from tcpm.version import __version__ as tcpm_version  # pylint: disable=import-outside-toplevel
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=textwrap.dedent(
@@ -123,13 +125,21 @@ def make_parser() -> argparse.ArgumentParser:
     """
         ).lstrip(),
         epilog=textwrap.dedent(
-            """
+            f"""
 
+        Version: {tcpm_version}
         Copyright Amazon.com Inc. or its affiliates.
         Released under SPDX-License-Identifier: MIT
 
     """
         ),
+    )
+
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=tcpm_version,
+        help="Print the version of the script and exit.",
     )
 
     parser.add_argument(

@@ -1,0 +1,72 @@
+#
+# Copyright Amazon.com Inc. or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+"""
+Version utility
+"""
+
+__version__ = "0.2.0"  # This is the version of the package. Flit will use this to set the version in the wheel.
+
+
+def _get_version_from_git_tag(tag: str, pattern: str) -> tuple:
+    """
+    Given a git tag, extract the version number as a tuple.
+    """
+    import re  # pylint: disable=import-outside-toplevel
+
+    match = re.match(pattern, tag)
+    if match:
+        return match.groups()
+    return (0, 0, 0)
+
+
+if __name__ == "__main__":
+    import argparse  # pylint: disable=import-outside-toplevel
+    import sys  # pylint: disable=import-outside-toplevel
+
+    parser = argparse.ArgumentParser(description="Get the version of the package.")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Print more information.")
+    parser.add_argument("--git", action="store_true", help="Get the version from the latest git tag.")
+    parser.add_argument("--git-branch", default="main", help="The git branch to use.")
+    parser.add_argument("--tag-match", default="v*", help="The git tag pattern to match.")
+    parser.add_argument(
+        "--tag-triplet-pattern",
+        default=r"v(\d+\.\d+\.\d+)",
+        help="A regex pattern to extract the version from the git tag.",
+    )
+    parser.add_argument(
+        "--fail-on-mismatch", action="store_true", help="Fail if the git tag does not match the embedded version."
+    )
+    args = parser.parse_args()
+
+    if args.verbose:
+        print(f"tcpm version: {__version__}")
+    else:
+        print(__version__, end="")
+
+    if args.git:
+        import subprocess  # pylint: disable=import-outside-toplevel
+
+        completed = subprocess.run(
+            ["git", "describe", args.git_branch, "--tags", "--abbrev=0", f"--match={args.tag_match}"],
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode == 0:
+            git_tag_version = completed.stdout.decode("utf-8").strip()
+
+            if args.verbose:
+                print(f"Git-tagged version on {args.git_branch} is {git_tag_version}")
+            if args.fail_on_mismatch:
+                git_version = _get_version_from_git_tag(git_tag_version, args.tag_triplet_pattern)
+                if ".".join(git_version) != __version__:
+                    sys.stderr.write(
+                        f"Git-tagged version {'.'.join(git_version)} does not match the embedded "
+                        f"version {__version__}.\r\n"
+                    )
+                    sys.exit(-1)
+        elif args.fail_on_mismatch:
+            if args.verbose:
+                sys.stderr.write(f"Failed to get git tag: {completed.stderr.decode('utf-8')}\r\n")
+            sys.exit(completed.returncode)

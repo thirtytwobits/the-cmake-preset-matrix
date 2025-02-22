@@ -11,13 +11,10 @@ Based on work originally done by @dixonsco on the [OpenCyphal](https://opencypha
 """
 # isort: skip_file
 
-__version__ = "0.1.0"
-
 # + ------------------------------------------------------------------------------------------------------------------+
 # | LIBRARY EXPORTS                                                                                                   |
 # + ------------------------------------------------------------------------------------------------------------------+
 
-# di
 from ._cli import cli_main
 from ._data_model import PresetGroup
 from ._data_model import Presets
