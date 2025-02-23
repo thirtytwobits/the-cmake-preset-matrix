@@ -108,6 +108,15 @@ def get_preset_group_names() -> list[str]:
     return [f"{group}Presets" for group in list(Presets.__annotations__.keys())]
 
 
+def backfill_shapes(group: PresetGroup) -> None:
+    """
+    If no shape is defined for a given parameter backfill with an empty dictionary.
+    """
+    for parameter_name in group.parameters:
+        if parameter_name not in group.shape:
+            group.shape[parameter_name] = {}
+
+
 def make_meta_presets(json_presets: dict) -> StructuredPresets:
     """
     Create a structured representation of a presets file.
@@ -154,11 +163,10 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     for preset_group_name, preset_group in preset_matrix_regen_vendor_data["preset-groups"].items():
         group = getattr(meta_presets.groups, preset_group_name)
         group.name = preset_group_name
-        group.prefix = (
-            preset_group["prefix"] if "prefix" in preset_group else f"{preset_group_name}{meta_presets.word_separator}"
-        )
+        group.prefix = preset_group["prefix"] if "prefix" in preset_group else f"{preset_group_name}"
         group.common = preset_group["common"] if "common" in preset_group else []
         group.shape = preset_group["shape"] if "shape" in preset_group else {}
         group.parameters = preset_group["parameters"] if "parameters" in preset_group else {}
+        backfill_shapes(group)
 
     return meta_presets

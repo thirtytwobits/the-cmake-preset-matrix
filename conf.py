@@ -56,7 +56,7 @@ html_context = {
 
 html_static_path = ["docs/static"]
 
-html_logo = "docs/static/SVG/matrix_logo.svg"
+html_logo = "docs/static/glossy_logo.png"
 
 html_favicon = "docs/static/SVG/matrix_logo.svg"
 

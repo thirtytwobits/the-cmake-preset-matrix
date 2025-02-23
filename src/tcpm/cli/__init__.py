@@ -16,7 +16,7 @@ from typing import Any
 
 from .._core import transform_in_place
 from .._data_model import make_meta_presets
-from .._utility import make_backup, validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
+from .._utility import PresetWriter, validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
 from ._parser import __script_name__, make_parser
 
 _cli_logger = logging.getLogger(__script_name__)
@@ -94,32 +94,20 @@ def binary_user_prompt_unless(
 
 
 def write_to_file(args: Any, meta_presets: Any) -> int:
-    if args.presets_file.exists():
-        # are you sure?
-        response = binary_user_prompt_unless(
-            f"{args.presets_file} already exists. Overwrite? (y/n): ",
-            re.compile("y", re.IGNORECASE),
-            force=args.force,
-            verbose=args.verbose,
-            non_interactive=args.non_interactive,
-            negative_text="Operation cancelled.",
-        )
-        if response == InteractiveResult.NEGATIVE:
-            return 1
-
-    if not args.no_backup:
-        backup_file = make_backup(args.presets_file, args.backup_file_suffix)
-        if backup_file is not None and not backup_file.exists():
-            _cli_logger.warning(
-                "Backup file %s%s could not be created (use --no-backup to skip).",
-                args.presets_file,
-                args.backup_file_suffix,
+    with PresetWriter(meta_presets, args.presets_file, args.indent, args.backup_file_suffix, args.no_backup) as pw:
+        if pw.will_overwrite:
+            # are you sure?
+            response = binary_user_prompt_unless(
+                f"{args.presets_file} already exists. Overwrite? (y/n): ",
+                re.compile("y", re.IGNORECASE),
+                force=args.force,
+                verbose=args.verbose,
+                non_interactive=args.non_interactive,
+                negative_text="Operation cancelled.",
             )
-            return 1
-
-    with args.presets_file.open("w", encoding="UTF-8") as f:
-        f.write(json.dumps(meta_presets.source, indent=args.indent))
-        f.write("\n")
+            if response == InteractiveResult.NEGATIVE:
+                return 1
+        pw.swap()
 
     return 0
 

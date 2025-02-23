@@ -46,6 +46,7 @@ test = [
     "pytest>=8.3.4",
     "pytest-github-actions-annotate-failures",
     "sybil[pytest]",
+    "jsonschema>=4.23.0",
 ]
 schema = ["jsonschema>=4.23.0"]
 docs = ["furo", "sphinx-argparse", "sphinxemoji", "sphinx"]
@@ -254,11 +255,9 @@ commands = [
 
 [tool.tox.env.docs]
 description = "Generate HTML documentation."
-extras=["docs"]
+extras = ["docs"]
 allowlist_externals = ["sphinx-build"]
-commands = [
-    ["sphinx-build", "-W", "-b", "html",  "{toxinidir}", "{envtmpdir}"]
-]
+commands = [["sphinx-build", "-W", "-b", "html", "{toxinidir}", "{envtmpdir}"]]
 
 # +---------------------------------------------------------------------------+
 # | TOOL:PYLINT
