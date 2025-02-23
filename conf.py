@@ -16,7 +16,7 @@ release = tcpm_version
 extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.coverage",
-    "sphinx.ext.imgmath",
+    "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
     "sphinx.ext.extlinks",

@@ -88,6 +88,8 @@ def make_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--presets-file",
+        "--output-file",
+        "-o",
         type=Path,
         default=Path("CMakePresets.json"),
         help="The path to the CMakePresets.json file to update.",
@@ -95,8 +97,10 @@ def make_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--template-file",
-        "-t",
+        "--input-file",
+        "-i",
         type=Path,
+        default=Path("CMakePresetsVendorTemplate.json"),
         help=textwrap.dedent(
             """
             A file to use as a template for the presets file. The template file is used to generate the presets file

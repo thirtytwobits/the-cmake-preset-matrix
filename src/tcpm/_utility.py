@@ -177,12 +177,14 @@ def reclean_source(group: str, clean_level: int | None, hidden: bool, meta_prese
     _clean_source(group, clean_level, False, hidden, meta_presets)
 
 
-def make_backup(presets_file: Path, backup_suffix: str) -> Path:
+def make_backup(presets_file: Path, backup_suffix: str) -> Path | None:
     """
     Create a backup of the presets file. The backup file will have the same name as the presets file with the
     specified backup suffix appended to the file extension. If a backup file with the same name already exists, a
     number will be appended to the suffix to make the backup file name unique.
     """
+    if not presets_file.exists():
+        return None
     backup_count = 0
     while True:
         backup_file = presets_file.with_stem(f"{presets_file.stem}_{backup_count:02}").with_suffix(backup_suffix)

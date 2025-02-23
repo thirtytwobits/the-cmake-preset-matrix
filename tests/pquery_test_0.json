@@ -27,7 +27,7 @@
                 "toolchainSuffix": ".cmake",
                 "configurationTypeList": "$('#config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
             },
-            "onLoad": [
+            "onload": [
                 "$('#preset-group-build parameters toolchain').json($('#preset-group-configure parameters toolchain').json())"
             ],
             "preset-groups": {

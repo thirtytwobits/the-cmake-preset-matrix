@@ -13,4 +13,5 @@ regen
 tcpm
 thirtytwobits
 toctree
+tryme
 xunit

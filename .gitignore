@@ -140,3 +140,6 @@ dmypy.json
 
 # bak files
 *.bak
+
+# tryme
+tryme/CMakePresets.json

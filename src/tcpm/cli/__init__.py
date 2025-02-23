@@ -108,7 +108,8 @@ def write_to_file(args: Any, meta_presets: Any) -> int:
             return 1
 
     if not args.no_backup:
-        if not make_backup(args.presets_file, args.backup_file_suffix).exists():
+        backup_file = make_backup(args.presets_file, args.backup_file_suffix)
+        if backup_file is not None and not backup_file.exists():
             _cli_logger.warning(
                 "Backup file %s%s could not be created (use --no-backup to skip).",
                 args.presets_file,
@@ -149,9 +150,13 @@ def cli_main(args: Any | None = None) -> int:
     else:
         logging.Logger.setLevel(_cli_logger, logging.INFO)
 
-    source_file = args.template_file if args.template_file is not None else args.presets_file
-    with source_file.open("r", encoding="UTF-8") as f:
-        json_presets = json.load(f)
+    source_file = args.template_file if args.template_file.exists() else args.presets_file
+    try:
+        with source_file.open("r", encoding="UTF-8") as f:
+            json_presets = json.load(f)
+    except FileNotFoundError:
+        _cli_logger.error("File not found: %s", source_file)
+        return 1
 
     meta_presets = make_meta_presets(json_presets)
 

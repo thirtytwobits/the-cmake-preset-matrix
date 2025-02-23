@@ -1342,8 +1342,8 @@ def render(document_or_path: dict | Path, word_separator: str = "-") -> dict:
     if "vendor" in document and __vendor_section_key__ in document["vendor"]:
         locator.append("vendor")
         locator.append(__vendor_section_key__)
-        if "onLoad" in document["vendor"][__vendor_section_key__]:
-            locator.append("onLoad")
+        if "onload" in document["vendor"][__vendor_section_key__]:
+            locator.append("onload")
             render_fragment(documents, locator, word_separator=word_separator)
             locator.pop()
         render_fragment(documents, locator, word_separator=word_separator)

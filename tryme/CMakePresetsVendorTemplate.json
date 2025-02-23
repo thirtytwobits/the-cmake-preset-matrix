@@ -1,0 +1,135 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "config-common",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "warnings": {
+                "deprecated": true,
+                "uninitialized": true
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_PREFIX_PATH": "${sourceParentDir}",
+                "CMAKE_CONFIGURATION_TYPES": "Release;RelSize;Debug;DebugAsan",
+                "CMAKE_CROSS_CONFIGS": "all",
+                "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
+                "CMAKE_DEFAULT_CONFIGS": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [],
+    "workflowPresets": [],
+    "packagePresets": [],
+    "testPresets": [],
+    "vendor": {
+        "tcpm": {
+            "version": 1,
+            "onload": [
+                "$('#preset-group-build parameters toolchain').json($('#preset-group-config parameters toolchain').json()).exp()",
+                "$('#preset-group-build parameters standard').json($('#preset-group-config parameters standard').json()).exp()",
+                "$('#preset-group-build parameters update').json($('#preset-group-config parameters update').json()).exp()",
+                "$('#preset-group-build parameters configuration').json($('#config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')).exp()",
+                "$('#preset-group-workflow parameters toolchain').json($('#preset-group-config parameters toolchain').json()).exp()",
+                "$('#preset-group-workflow parameters standard').json($('#preset-group-config parameters standard').json()).exp()",
+                "$('#preset-group-workflow parameters update').json($('#preset-group-config parameters update').json()).exp()"
+            ],
+            "preset-groups": {
+                "configure": {
+                    "prefix": "config",
+                    "name": "preset-group-config",
+                    "common": [
+                        "config-common"
+                    ],
+                    "parameters": {
+                        "toolchain": [
+                            "gcc-native",
+                            "gcc-native-32",
+                            "gcc7-native",
+                            "clang-native"
+                        ],
+                        "standard": [
+                            "cpp-14",
+                            "cpp-17",
+                            "cpp-20"
+                        ],
+                        "update": [
+                            "online",
+                            "offline"
+                        ]
+                    },
+                    "shape": {
+                        "toolchain": {
+                            "toolchainFile": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/{parameter}.cmake",
+                            "cacheVariables": {
+                                "MY_TARGET_PLATFORM": "{pq}(this).if('{name}' $= 'gcc-native-32', 'm32', 'native')"
+                            }
+                        },
+                        "standard": {
+                            "cacheVariables": {
+                                "CMAKE_CXX_STANDARD": "{pq}(this).literal('{parameter}').split('{sep}').get(1)"
+                            }
+                        },
+                        "update": {
+                            "cacheVariables": {
+                                "FETCHCONTENT_FULLY_DISCONNECTED": "{pq}(this).if('online' == '{parameter}', 'OFF', 'ON')"
+                            }
+                        }
+                    }
+                },
+                "build": {
+                    "prefix": "build",
+                    "name": "preset-group-build",
+                    "parameters": {
+                        "configuration": [],
+                        "toolchain": [],
+                        "standard": [],
+                        "update": []
+                    },
+                    "shape": {
+                        "configuration": {
+                            "configurePreset": "{pq}(this).literal('{name}').replace('{prefix}{sep}{parameter}', '{groups[configure][prefix]}')",
+                            "configuration": "{parameter}",
+                            "targets": [
+                                "build",
+                                "build_examples",
+                                "build_unittests",
+                                "build_compile_tests",
+                                "docs",
+                                "lint",
+                                "release"
+                            ]
+                        },
+                        "toolchain": {},
+                        "standard": {},
+                        "update": {}
+                    }
+                },
+                "workflow": {
+                    "prefix": "workflow",
+                    "name": "preset-group-workflow",
+                    "parameters": {
+                        "toolchain": [],
+                        "standard": [],
+                        "update": []
+                    },
+                    "shape": {
+                        "toolchain": {
+                            "displayName": "{pq}(this).literal('{name}').replace('workflow{sep}','').replace('{sep}', ' ')",
+                            "description": "autogenerated workflow"
+                        },
+                        "standard": {},
+                        "update": {}
+                    }
+                }
+            }
+        }
+    }
+}
