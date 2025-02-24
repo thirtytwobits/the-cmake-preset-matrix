@@ -21,9 +21,22 @@ def _get_version_from_git_tag(tag: str, pattern: str) -> tuple:
     return (0, 0, 0)
 
 
+def _fail_on_mismatch(tag: str, tag_triplet_pattern: str) -> None:
+    """
+    Call exit if the git tag does not match the embedded version.
+    """
+    git_version = _get_version_from_git_tag(tag, tag_triplet_pattern)
+    if ".".join(git_version) != __version__:
+        sys.stderr.write(
+            f"Git-tagged version {'.'.join(git_version)} does not match the embedded " f"version {__version__}.\r\n"
+        )
+        sys.exit(-1)
+
+
 if __name__ == "__main__":
     import argparse  # pylint: disable=import-outside-toplevel
     import sys  # pylint: disable=import-outside-toplevel
+    import os  # pylint: disable=import-outside-toplevel
 
     parser = argparse.ArgumentParser(description="Get the version of the package.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print more information.")
@@ -59,14 +72,20 @@ if __name__ == "__main__":
             if args.verbose:
                 print(f"Git-tagged version on {args.git_branch} is {git_tag_version}")
             if args.fail_on_mismatch:
-                git_version = _get_version_from_git_tag(git_tag_version, args.tag_triplet_pattern)
-                if ".".join(git_version) != __version__:
-                    sys.stderr.write(
-                        f"Git-tagged version {'.'.join(git_version)} does not match the embedded "
-                        f"version {__version__}.\r\n"
-                    )
-                    sys.exit(-1)
+                _fail_on_mismatch(git_tag_version, args.tag_triplet_pattern)
         elif args.fail_on_mismatch:
             if args.verbose:
                 sys.stderr.write(f"Failed to get git tag: {completed.stderr.decode('utf-8')}\r\n")
             sys.exit(completed.returncode)
+    else:
+        ref = os.environ.get("GITHUB_REF")
+        tag_name = ref.split("/")[-1] if ref and "tags" in ref else None
+        if tag_name is not None:
+            if args.verbose:
+                print(f"Git-tagged version from GITHUB_REF is {tag_name}")
+            if args.fail_on_mismatch:
+                _fail_on_mismatch(tag_name, args.tag_triplet_pattern)
+        elif args.fail_on_mismatch:
+            if args.verbose:
+                sys.stderr.write(f"Failed to get git tag from GITHUB_REF: {ref}\r\n")
+            sys.exit(-2)
