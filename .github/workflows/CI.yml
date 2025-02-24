@@ -42,8 +42,6 @@ jobs:
     needs:
     - validation
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: ${{ github.ref }}
     steps:
     - uses: actions/checkout@v4.2.2
       with:
@@ -66,7 +64,7 @@ jobs:
         --user
     - name: 🔨 Build a binary wheel and a source tarball
       # Fails the release if the internal version doesn't match the latest tag on main.
-      run: tox run -e checked_build
+      run: tox run -e checked_build -- --tag=${{ github.ref }}
     - name: ⬆️ Store the distribution packages
       uses: actions/upload-artifact@v4.6.1
       with:

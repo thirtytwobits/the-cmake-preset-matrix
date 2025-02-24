@@ -36,13 +36,13 @@ def _fail_on_mismatch(tag: str, tag_triplet_pattern: str) -> None:
 
 if __name__ == "__main__":
     import argparse  # pylint: disable=import-outside-toplevel
-    import os  # pylint: disable=import-outside-toplevel
 
     parser = argparse.ArgumentParser(description="Get the version of the package.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print more information.")
     parser.add_argument("--git", action="store_true", help="Get the version from the latest git tag.")
     parser.add_argument("--git-branch", default="main", help="The git branch to use.")
     parser.add_argument("--tag-match", default="v*", help="The git tag pattern to match.")
+    parser.add_argument("--tag", help="A manually provided git tag. Overrides --git.")
     parser.add_argument(
         "--tag-triplet-pattern",
         default=r"v(\d+\.\d+\.\d+)",
@@ -58,7 +58,22 @@ if __name__ == "__main__":
     else:
         print(__version__, end="")
 
-    if args.git:
+    if args.tag is not None:
+        if args.tag.startswith("refs/tags/"):
+            ref = args.tag
+            tag_name = ref.split("/")[-1] if ref and "tags" in ref else None
+        else:
+            tag_name = args.tag
+        if tag_name is not None:
+            if args.verbose:
+                print(f"Git-tag version from command-line is {tag_name}")
+            if args.fail_on_mismatch:
+                _fail_on_mismatch(tag_name, args.tag_triplet_pattern)
+        elif args.fail_on_mismatch:
+            if args.verbose:
+                sys.stderr.write(f"Unrecognized --tag argument: {ref}\r\n")
+            sys.exit(-2)
+    elif args.git:
         import subprocess  # pylint: disable=import-outside-toplevel
 
         completed = subprocess.run(
@@ -77,15 +92,3 @@ if __name__ == "__main__":
             if args.verbose:
                 sys.stderr.write(f"Failed to get git tag: {completed.stderr.decode('utf-8')}\r\n")
             sys.exit(completed.returncode)
-    else:
-        ref = os.environ.get("GITHUB_REF")
-        tag_name = ref.split("/")[-1] if ref and "tags" in ref else None
-        if tag_name is not None:
-            if args.verbose:
-                print(f"Git-tagged version from GITHUB_REF is {tag_name}")
-            if args.fail_on_mismatch:
-                _fail_on_mismatch(tag_name, args.tag_triplet_pattern)
-        elif args.fail_on_mismatch:
-            if args.verbose:
-                sys.stderr.write(f"Failed to get git tag from GITHUB_REF: {ref}\r\n")
-            sys.exit(-2)

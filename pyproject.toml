@@ -268,6 +268,7 @@ commands = [
         "tcpm.version",
         "--fail-on-mismatch",
         "-v",
+        "{posargs}",
     ],
     [
         "python3",
