@@ -26,7 +26,16 @@
                     },
                     "exclude": [
                         {
-                            "variant": "three"
+                            "variant": "three",
+                            "toolchain": [
+                                "clang"
+                            ]
+                        },
+                        {
+                            "variant": "two",
+                            "toolchain": [
+                                "gcc"
+                            ]
                         }
                     ]
                 }

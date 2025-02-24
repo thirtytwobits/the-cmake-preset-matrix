@@ -112,9 +112,9 @@ result set using ``exclude``. For example:
   ],
 
 Try adding the above exclude to the ``CMakePresetsVendorTemplate.json`` under
-``["vendor"]["tcpm"]["preset-groups"]["configure"]``. Now do ``tcpm -f`` (``-f`` to force overwrite of the existing
-``CMakePresets.json`` file) and you'll have a slightly smaller presets file that does not allow configuring for
-gcc-native-32 when also using c++ 20.
+``["vendor"]["tcpm"]["preset-groups"]["workflow"]``. Now do ``tcpm -f`` (``-f`` to force overwrite of the existing
+``CMakePresets.json`` file) and you'll have a slightly smaller presets file that does not provide a workflow for this
+combination of parameters.
 
 .. _`CMakePresets.json`: https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html
 .. _`TCPM`: https://github.com/thirtytwobits/the-cmake-preset-matrix

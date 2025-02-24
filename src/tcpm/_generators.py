@@ -27,6 +27,14 @@ def is_excluded(configuration: Iterable[ScopedParameter], exclude: ExcludeList) 
 
         from tcpm._generators import is_excluded
 
+        assert False == is_excluded(
+            (
+                ScopedParameter(".", "configure", "param1", "foo"),
+                ScopedParameter(".", "configure", "param2", "bar"),
+            ),
+            [],
+        )
+
     .. code-block:: python
 
         assert True == is_excluded(
@@ -39,15 +47,64 @@ def is_excluded(configuration: Iterable[ScopedParameter], exclude: ExcludeList) 
                 {"param2": "bar"},
             ],
         )
-
         assert False == is_excluded(
             (
                 ScopedParameter(".", "configure", "param1", "foo"),
                 ScopedParameter(".", "configure", "param2", "baz"),
             ),
             [
-                {"param1": "foo"},
+                {"param1": "foo", "param2": "bar"},
+            ],
+        )
+
+    We also support multiple values per parameter:
+
+    .. code-block:: python
+
+        assert False == is_excluded(
+            (
+                ScopedParameter(".", "configure", "param1", "value3"),
+                ScopedParameter(".", "configure", "param2", "bar"),
+            ),
+            [
+                {"param1": ["value1", "value2"], "param2": "bar"},
+            ],
+        )
+        assert True == is_excluded(
+            (
+                ScopedParameter(".", "configure", "param1", "value2"),
+                ScopedParameter(".", "configure", "param2", "bar"),
+            ),
+            [
+                {"param1": ["value1", "value2"], "param2": "bar"},
+            ],
+        )
+
+    Note that rules must match all parameters to exclude a configuration:
+
+    .. code-block:: python
+
+        assert False == is_excluded(
+            (
+                ScopedParameter(".", "configure", "param1", "foo"),
+            ),
+            [
+                {"param1": "foo", "param2": "bar"},
                 {"param2": "bar"},
+            ],
+        )
+
+    But any rule can match any parameter to exclude a configuration:
+
+    .. code-block:: python
+
+        assert True == is_excluded(
+            (
+                ScopedParameter(".", "configure", "param1", "foo"),
+            ),
+            [
+                {"param1": ["foo"], "param2": "bar"},
+                {"param1": ["foo"]},
             ],
         )
 
@@ -58,13 +115,26 @@ def is_excluded(configuration: Iterable[ScopedParameter], exclude: ExcludeList) 
     if len(exclude) == 0:
         return False
 
-    matches: list[bool] = [False] * len(exclude)
-    for i, rule in enumerate(exclude):
+    def _rule_match(rule: dict[str, str | list[str]], sp: ScopedParameter) -> bool:
+        rule_values = rule[sp.parameter]
+        if isinstance(rule_values, list):
+            return sp.value in rule_values
+        return sp.value == rule_values
+
+    param_count = len(list(configuration))
+    for rule in exclude:
+        matches = 0
+        applicable = param_count
         for scoped_parameter in configuration:
-            if scoped_parameter.parameter in rule and scoped_parameter.value == rule[scoped_parameter.parameter]:
-                matches[i] = True
-                break
-    return all(matches)
+            if scoped_parameter.parameter in rule:
+                if not _rule_match(rule, scoped_parameter):
+                    break
+                matches += 1
+            else:
+                applicable -= 1
+        if matches == applicable and matches == len(rule):
+            return True
+    return False
 
 
 def make_shaped_matrix(
@@ -161,9 +231,9 @@ def make_parameter_presets(
             parameters = get_parameters(group, shape_name, meta_presets)
         except KeyError:
             continue
-        if is_excluded(parameters, preset_group.exclude):
-            continue
         for scoped_parameter in parameters:
+            if is_excluded([scoped_parameter], preset_group.exclude):
+                continue
             preset: dict[str, Any] = {"name": scoped_parameter.preset_scope}
             if hidden:
                 preset["hidden"] = hidden

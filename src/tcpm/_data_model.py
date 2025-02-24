@@ -65,7 +65,7 @@ ShapedParameters = dict[str, list[ScopedParameter]]
 a dictionary of shapes and their parameters scoped to a preset.
 """
 
-ExcludeList = list[dict[str, str]]
+ExcludeList = list[dict[str, str | list[str]]]
 """
 A list of excluded configurations.
 """

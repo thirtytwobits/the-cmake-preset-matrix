@@ -54,12 +54,6 @@
                             "cpp-20"
                         ]
                     },
-                    "exclude": [
-                        {
-                            "toolchain": "gcc-native-32",
-                            "standard": "cpp-20"
-                        }
-                    ],
                     "shape": {
                         "toolchain": {
                             "toolchainFile": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/{parameter}.cmake",

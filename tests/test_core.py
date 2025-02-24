@@ -47,6 +47,6 @@ def test_excludes():
 
     transform_in_place(meta_presets, 0)
 
-    assert len(meta_presets.source["configurePresets"]) == 6
-
     print(json.dumps(meta_presets.source, indent=4))
+
+    assert len(meta_presets.source["configurePresets"]) == 9
