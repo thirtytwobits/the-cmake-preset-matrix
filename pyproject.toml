@@ -259,6 +259,26 @@ extras = ["docs"]
 allowlist_externals = ["sphinx-build"]
 commands = [["sphinx-build", "-W", "-b", "html", "{toxinidir}", "{envtmpdir}"]]
 
+[tool.tox.env.checked_build]
+description = "Fails if the latest tag on main is different than the internally reported version of TCPM."
+commands = [
+    [
+        "python3",
+        "-m",
+        "tcpm.version",
+        "--git",
+        "--git-branch",
+        "main",
+        "--fail-on-mismatch",
+        "-v",
+    ],
+    [
+        "python3",
+        "-m",
+        "build",
+    ],
+]
+
 # +---------------------------------------------------------------------------+
 # | TOOL:PYLINT
 # +---------------------------------------------------------------------------+
