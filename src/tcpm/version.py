@@ -5,6 +5,7 @@
 """
 Version utility
 """
+import sys
 
 __version__ = "0.2.0"  # This is the version of the package. Flit will use this to set the version in the wheel.
 
@@ -35,7 +36,6 @@ def _fail_on_mismatch(tag: str, tag_triplet_pattern: str) -> None:
 
 if __name__ == "__main__":
     import argparse  # pylint: disable=import-outside-toplevel
-    import sys  # pylint: disable=import-outside-toplevel
     import os  # pylint: disable=import-outside-toplevel
 
     parser = argparse.ArgumentParser(description="Get the version of the package.")
