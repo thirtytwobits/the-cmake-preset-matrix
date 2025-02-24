@@ -27,21 +27,18 @@ def make_parser() -> argparse.ArgumentParser:
             Generate CMake presets based on given options. See
             https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html for details on cmake presets.
 
-            This script is driven by configuration in the 'vendor' section of the CMakePresets.json file. The
+            This script is driven by configuration in the top-level 'vendor' section of the CMakePresets.json file. The
             'tcpm' section of the 'vendor' section is used to generate the presets. The 'tcpm' section must contain
             the following keys:
 
             * version – The version of the 'tcpm' section. The current version is 1.
             * preset-groups – A dictionary of preset groups. Each group must contain the following keys:
 
-                * prefix – The prefix to use when generating preset names. The default is the group name followed by
-                  the word separator.
                 * common –  A list of common presets that pre-exist in the presets file and which the group presets
                   should inherit from.
-                * shape – A template for the shape of the presets. The shape is a dictionary of keys and values that
-                  are used to generate the presets. The values can be either a string or a dictionary of
-                  key-value pairs. The key-value pairs are recursively expanded until a string is reached.
                 * parameters – A dictionary of named values to use when generating presets.
+
+            See https://thirtytwobits.github.io/the-cmake-preset-matrix for more information.
 
     """
         ).lstrip(),

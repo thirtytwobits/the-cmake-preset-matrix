@@ -51,7 +51,7 @@ document at the time a given preset is generated.
 
 There's a lot more to it, of course, and `TCPM`_ provides a complete JSON transformation language for presets json in
 in addition to other features. To get started we reccommend starting with the
-`Try Me`_ exercise or heading over to the `Guide`_.
+`Try Me`_ exercise.
 
 .. note ::
 
@@ -82,7 +82,7 @@ Key Features
 
 .. _`CMakePresets.json`: https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html
 
-.. _`Try Me`: tryme/
+.. _`Try Me`: https://thirtytwobits.github.io/the-cmake-preset-matrix/tryme/index.html
 
 .. _`Guide`: docs/guide/
 

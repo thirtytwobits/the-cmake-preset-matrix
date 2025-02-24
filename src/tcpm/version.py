@@ -7,7 +7,7 @@ Version utility
 """
 import sys
 
-__version__ = "0.2.0"  # This is the version of the package. Flit will use this to set the version in the wheel.
+__version__ = "0.2.1"  # This is the version of the package. Flit will use this to set the version in the wheel.
 
 
 def _get_version_from_git_tag(tag: str, pattern: str) -> tuple:
