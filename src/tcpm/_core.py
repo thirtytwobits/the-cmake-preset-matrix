@@ -9,7 +9,7 @@ Core functions for transforming presets.
 import logging
 from dataclasses import fields
 
-from ._data_model import StructuredPresets
+from ._data_model import StructuredPresets, update_meta_presets
 from ._generators import make_matrix_presets, make_parameter_presets
 from ._pquery import render as render_pquery
 from ._utility import clean_source, merge_preset_list, reclean_source
@@ -56,6 +56,7 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
 
     # pquery must run first to ensure "onload" events are processed before we start transforming the document.
     render_pquery(meta_presets.source, word_separator=meta_presets.word_separator, events=["onload"])
+    update_meta_presets(meta_presets)
 
     skip_list: set[str] = ensure_preset_groups(meta_presets)
 

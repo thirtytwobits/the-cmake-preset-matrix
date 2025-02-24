@@ -121,7 +121,7 @@ class StructuredPresets:
     version: int
     static: dict
     word_separator: str
-    on_load: list[str]
+    onload: list[str]
     groups: Presets
 
     def __getitem__(self, field_name: str) -> Any:
@@ -148,7 +148,7 @@ def make_default_meta_presets() -> StructuredPresets:
         version=__vendor_data_version__,
         static={},
         word_separator=__default_word_separator__,
-        on_load=[],
+        onload=[],
         groups=groups,
     )
     for preset_group_name, _ in groups.__annotations__.items():
@@ -182,6 +182,17 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     """
     Create a structured representation of a presets file.
     """
+    return update_meta_presets(make_default_meta_presets(), json_presets)
+
+
+def update_meta_presets(meta_presets: StructuredPresets, json_presets: dict | None = None) -> StructuredPresets:
+    """
+    Update the meta_presets object after a change to the source.
+    """
+    if json_presets is not None:
+        meta_presets.source = json_presets
+    else:
+        json_presets = meta_presets.source
 
     if "vendor" not in json_presets:
         raise VendorDataError("The presets file does not contain the 'vendor' key.")
@@ -205,8 +216,6 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
             f"Unsupported version of the 'preset_matrix_regen' section: {preset_matrix_regen_version}"
         )
 
-    meta_presets: StructuredPresets = make_default_meta_presets()
-    meta_presets.source = json_presets
     meta_presets.version = preset_matrix_regen_version
     try:
         meta_presets.static = preset_matrix_regen_vendor_data["static"]
@@ -216,11 +225,12 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
     if "word_separator" in preset_matrix_regen_vendor_data:
         meta_presets.word_separator = preset_matrix_regen_vendor_data["word_separator"]
 
-    if "on_load" in preset_matrix_regen_vendor_data:
-        if isinstance(preset_matrix_regen_vendor_data["on_load"], str):
-            meta_presets.on_load = [preset_matrix_regen_vendor_data["on_load"]]
+    if "onload" in preset_matrix_regen_vendor_data:
+        if isinstance(preset_matrix_regen_vendor_data["onload"], str):
+            meta_presets.onload = [preset_matrix_regen_vendor_data["onload"]]
         else:
-            meta_presets.on_load = preset_matrix_regen_vendor_data["on_load"]
+            meta_presets.onload = preset_matrix_regen_vendor_data["onload"]
+
     for preset_group_name, preset_group in preset_matrix_regen_vendor_data["preset-groups"].items():
         group = getattr(meta_presets.groups, preset_group_name)
         group.name = preset_group_name
