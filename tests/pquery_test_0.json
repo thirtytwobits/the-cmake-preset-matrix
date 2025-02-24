@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "config-common",
+            "name": "configure-common",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "cacheVariables": {
@@ -25,7 +25,7 @@
             "static": {
                 "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
                 "toolchainSuffix": ".cmake",
-                "configurationTypeList": "$('#config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
+                "configurationTypeList": "$('#configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
             },
             "onload": [
                 "$('#preset-group-build parameters toolchain').json($('#preset-group-configure parameters toolchain').json())"
@@ -35,7 +35,7 @@
                     "prefix": "config",
                     "name": "preset-group-configure",
                     "common": [
-                        "config-common"
+                        "configure-common"
                     ],
                     "parameters": {
                         "toolchain": [
@@ -53,7 +53,7 @@
                     "prefix": "build",
                     "name": "preset-group-build",
                     "common": [
-                        "config-common"
+                        "configure-common"
                     ],
                     "parameters": {
                         "toolchain": []

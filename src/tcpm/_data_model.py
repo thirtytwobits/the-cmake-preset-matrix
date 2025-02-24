@@ -27,6 +27,7 @@ class PresetGroup:
     common: list[str]
     shape: dict
     parameters: dict[str, list]
+    excludes: list[dict[str, str]]
 
     def __getitem__(self, field_name: str) -> Any:
         """
@@ -79,11 +80,11 @@ def make_default_meta_presets() -> StructuredPresets:
     Create a structured representation of an empty presets file.
     """
     groups = Presets(
-        configure=PresetGroup("", "", [], {}, {}),
-        build=PresetGroup("", "", [], {}, {}),
-        test=PresetGroup("", "", [], {}, {}),
-        package=PresetGroup("", "", [], {}, {}),
-        workflow=PresetGroup("", "", [], {}, {}),
+        configure=PresetGroup("", "", [], {}, {}, []),
+        build=PresetGroup("", "", [], {}, {}, []),
+        test=PresetGroup("", "", [], {}, {}, []),
+        package=PresetGroup("", "", [], {}, {}, []),
+        workflow=PresetGroup("", "", [], {}, {}, []),
     )
 
     meta_presets: StructuredPresets = StructuredPresets(
@@ -167,6 +168,7 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
         group.common = preset_group["common"] if "common" in preset_group else []
         group.shape = preset_group["shape"] if "shape" in preset_group else {}
         group.parameters = preset_group["parameters"] if "parameters" in preset_group else {}
+        group.excludes = preset_group["excludes"] if "excludes" in preset_group else []
         backfill_shapes(group)
 
     return meta_presets

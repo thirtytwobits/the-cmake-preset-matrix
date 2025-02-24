@@ -280,7 +280,7 @@ def test_render_presets():
     """
     current_file_path = Path(__file__).parent
     test_document = current_file_path / Path("pquery_test_0.json")
-    result = pquery_render(test_document)
+    result = pquery_render(test_document, events=["onload"])
 
     assert result["vendor"][__vendor_section_key__]["static"]["configurationTypeList"] == [
         "Release",

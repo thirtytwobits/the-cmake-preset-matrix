@@ -18,6 +18,32 @@ from .cli._parser import __script_name__
 _core_logger = logging.getLogger(__script_name__)
 
 
+def ensure_preset_groups(meta_presets: StructuredPresets) -> set[str]:
+    """
+    Make sure that all groups in the meta_presets object have a corresponding list in the source document. If a group
+    is missing, it is added to the source document – in the correct order – with an empty list as it's value.
+
+    :param meta_presets: The meta_presets object to check.
+    :return: A set of group names that had no corresponding list in the source document nor any parameters in the group.
+    """
+    skip_list: set[str] = set()
+
+    for group_field in fields(meta_presets.groups):
+        if f"{group_field.name}Presets" not in meta_presets.source:
+            if len(meta_presets.groups[group_field.name].parameters) == 0:
+                skip_list.add(group_field.name)
+            else:
+                meta_presets.source[f"{group_field.name}Presets"] = []
+                # Move the new group to the correct position
+                keys = list(meta_presets.source.keys())
+                keys.remove(f"{group_field.name}Presets")
+                vendor_index = keys.index("vendor")
+                keys.insert(vendor_index, f"{group_field.name}Presets")
+                meta_presets.source = {k: meta_presets.source[k] for k in keys}
+
+    return skip_list
+
+
 def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
     """
     Idempotent (mostly) generation of CMake presets based the contents of the vendor section of the presets file.
@@ -28,13 +54,12 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
     :return: A set of group names that were skipped during transformation.
     """
 
-    skip_list: set[str] = set()
-    for group_field in fields(meta_presets.groups):
-        if f"{group_field.name}Presets" not in meta_presets.source:
-            skip_list.add(group_field.name)
+    # pquery must run first to ensure "onload" events are processed before we start transforming the document.
+    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator, events=["onload"])
+
+    skip_list: set[str] = ensure_preset_groups(meta_presets)
 
     clean_source("configure", clean, True, meta_presets)
-    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
     hidden_preset_index = make_parameter_presets(
         "configure",
         True,

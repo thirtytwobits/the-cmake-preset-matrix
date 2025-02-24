@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "config-common",
+            "name": "configure-common",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/build",
@@ -25,27 +25,21 @@
             }
         }
     ],
-    "buildPresets": [],
-    "workflowPresets": [],
-    "packagePresets": [],
-    "testPresets": [],
     "vendor": {
         "tcpm": {
             "version": 1,
             "onload": [
                 "$('#preset-group-build parameters toolchain').json($('#preset-group-config parameters toolchain').json()).exp()",
                 "$('#preset-group-build parameters standard').json($('#preset-group-config parameters standard').json()).exp()",
-                "$('#preset-group-build parameters update').json($('#preset-group-config parameters update').json()).exp()",
-                "$('#preset-group-build parameters configuration').json($('#config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')).exp()",
+                "$('#preset-group-build parameters configuration').json($('#configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')).exp()",
                 "$('#preset-group-workflow parameters toolchain').json($('#preset-group-config parameters toolchain').json()).exp()",
-                "$('#preset-group-workflow parameters standard').json($('#preset-group-config parameters standard').json()).exp()",
-                "$('#preset-group-workflow parameters update').json($('#preset-group-config parameters update').json()).exp()"
+                "$('#preset-group-workflow parameters standard').json($('#preset-group-config parameters standard').json()).exp()"
             ],
             "preset-groups": {
                 "configure": {
                     "name": "preset-group-config",
                     "common": [
-                        "config-common"
+                        "configure-common"
                     ],
                     "parameters": {
                         "toolchain": [
@@ -57,12 +51,14 @@
                             "cpp-14",
                             "cpp-17",
                             "cpp-20"
-                        ],
-                        "update": [
-                            "online",
-                            "offline"
                         ]
                     },
+                    "exclude": [
+                        {
+                            "toolchain": "gcc-native-32",
+                            "standard": "cpp-20"
+                        }
+                    ],
                     "shape": {
                         "toolchain": {
                             "toolchainFile": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/{parameter}.cmake",
@@ -74,11 +70,6 @@
                             "cacheVariables": {
                                 "CMAKE_CXX_STANDARD": "{pq}(this).literal('{parameter}').split('{sep}').get(1)"
                             }
-                        },
-                        "update": {
-                            "cacheVariables": {
-                                "FETCHCONTENT_FULLY_DISCONNECTED": "{pq}(this).if('online' == '{parameter}', 'OFF', 'ON')"
-                            }
                         }
                     }
                 },
@@ -87,8 +78,7 @@
                     "parameters": {
                         "configuration": [],
                         "toolchain": [],
-                        "standard": [],
-                        "update": []
+                        "standard": []
                     },
                     "shape": {
                         "configuration": {
@@ -110,8 +100,7 @@
                     "name": "preset-group-workflow",
                     "parameters": {
                         "toolchain": [],
-                        "standard": [],
-                        "update": []
+                        "standard": []
                     },
                     "shape": {
                         "toolchain": {

@@ -5,7 +5,7 @@
    :hidden:
 
    CMakePresets Guide <docs/guide/index>
-   TryMe <tryme/README>
+   TryMe <tryme/index>
    CLI (tcpm) <docs/cli>
    docs/dev
    Appendix <docs/appendix>

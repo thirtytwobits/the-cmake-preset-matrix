@@ -28,25 +28,30 @@ the ``tcpm`` tool will generate four (4) configuration presets:
 .. code-block:: json
 
     {
-        "name": "config-gcc-cpp-20"
+        "name": "configure-gcc-cpp-20"
     },
     {
-        "name": "config-gcc-cpp-23"
+        "name": "configure-gcc-cpp-23"
     },
     {
-        "name": "config-clang-cpp-20"
+        "name": "configure-clang-cpp-20"
     },
     {
-        "name": "config-clang-cpp-23"
+        "name": "configure-clang-cpp-23"
     },
 
 
 If you added a third parameter list with two items then `TCPM`_ would generate eight (8) configurations, the cartesian
 product producing :math:`|A| \times |B| = |A| * |B|` items.
 
-There's a lot more to it, of course, and `TCPM`_ provides a complete JSON transformation language you can use to
-generate presets and various data within each based on a few key variables. To dive in we reccommend starting with the
-:ref:`tryme_page` exercise or heading over to the :ref:`tcpm_guide`.
+`TCPM`_ also provides a template language to allow generation of various preset fields like ``"cacheVariables"``. These
+templates, called "shapes" in the json, are given contextual tokens to use in string expansion and, for more complex
+logic, the ``pQuery`` DSL embedded in `TCPM`_ allows procedural expansion of fields based on the state of a presets
+document at the time a given preset is generated.
+
+There's a lot more to it, of course, and `TCPM`_ provides a complete JSON transformation language for presets json in
+in addition to other features. To get started we reccommend starting with the
+`Try Me`_ exercise or heading over to the `Guide`_.
 
 .. note ::
 
@@ -76,6 +81,10 @@ Key Features
 .. _`Kitware`: https://www.kitware.com/
 
 .. _`CMakePresets.json`: https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html
+
+.. _`Try Me`: tryme/
+
+.. _`Guide`: docs/guide/
 
 .. |tcpm_logo| image:: /docs/static/SVG/matrix_logo.svg
    :width: 50px

@@ -38,7 +38,7 @@ Generating coverage reports:
 
 .. note::
 
-    Report generation will fail if you haven't run the tests first to generate the intermediate artifacts this setup
+    Report generation will fail if you haven't run the tests first to generate the intermediate artifacts this step
     consumes.
 
 Running linters:

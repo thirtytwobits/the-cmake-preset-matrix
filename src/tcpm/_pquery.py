@@ -1318,16 +1318,19 @@ def render_fragment(
             process_value(start_at, i, value)
 
 
-def render(document_or_path: dict | Path, word_separator: str = "-") -> dict:
+def render(document_or_path: dict | Path, word_separator: str = "-", events: list[str] | None = None) -> dict:
     """
     Renders all pQuery statements in a CMakePresets.json document.
 
     :param document_or_path: The document to render. Expansions are done in place.
     :param word_separator: The separator to use where specified in comparators. The default follows javascript.
+    :param events: A list of events to render.
     :return: The rendered document.
     :raises PQueryError: If pquery statements within the document are malformed.
     :raises FileNotFoundError: If the document path cannot be found.
     """
+    if events is None:
+        events = []
     if isinstance(document_or_path, Path):
         with document_or_path.open("r") as file:
             document = json.load(file)
@@ -1342,11 +1345,17 @@ def render(document_or_path: dict | Path, word_separator: str = "-") -> dict:
     if "vendor" in document and __vendor_section_key__ in document["vendor"]:
         locator.append("vendor")
         locator.append(__vendor_section_key__)
+        onload = None
         if "onload" in document["vendor"][__vendor_section_key__]:
-            locator.append("onload")
-            render_fragment(documents, locator, word_separator=word_separator)
-            locator.pop()
+            if "onload" in events:
+                locator.append("onload")
+                render_fragment(documents, locator, word_separator=word_separator)
+                locator.pop()
+            onload = document["vendor"][__vendor_section_key__]["onload"]
+            document["vendor"][__vendor_section_key__]["onload"] = []
         render_fragment(documents, locator, word_separator=word_separator)
+        if onload is not None:
+            document["vendor"][__vendor_section_key__]["onload"] = onload
         locator.pop()
         locator.pop()
 

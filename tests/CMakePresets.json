@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "config-common",
+            "name": "configure-common",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/build",
@@ -34,14 +34,13 @@
             "static": {
                 "toolchainBasePath": "${{sourceParentDir}}/.devcontainer/cmake/toolchains/",
                 "toolchainSuffix": ".cmake",
-                "firstConfiguration": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';').get(0)"
+                "firstConfiguration": "$('configurePresets #configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';').get(0)"
             },
             "preset-groups": {
                 "configure": {
                     "name": "preset-group-config",
-                    "prefix": "config",
                     "common": [
-                        "config-common"
+                        "configure-common"
                     ],
                     "parameters": {
                         "toolchain": [
@@ -60,9 +59,8 @@
                     }
                 },
                 "build": {
-                    "prefix": "build",
                     "parameters": {
-                        "configuration": "$('configurePresets #config-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')",
+                        "configuration": "$('configurePresets #configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')",
                         "toolchain": "$('#preset-group-config parameters toolchain').json()"
                     },
                     "shape": {
@@ -77,7 +75,6 @@
                     }
                 },
                 "workflow": {
-                    "prefix": "workflow",
                     "parameters": {
                         "toolchain": "$('#preset-group-config parameters toolchain').json()"
                     },
