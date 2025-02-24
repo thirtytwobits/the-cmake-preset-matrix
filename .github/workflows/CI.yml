@@ -14,43 +14,49 @@ on:
 jobs:
   validation:
     runs-on: ubuntu-latest
+    name: 🧪 run unit tests
     container: ghcr.io/opencyphal/toxic:tx22.4.3
     steps:
     - uses: actions/checkout@v4.2.2
       with:
         submodules: true
-    - name: lint
+    - name: 🧪 lint
       run: tox run -e lint
-    - name: test
+    - name: 🧪 test
       run: tox run-parallel
-    - name: report
+    - name: 📉 report
       run: tox run -e report
-    - name: upload-coverage-reports
+    - name: ⬆️ upload-coverage-reports
       uses: actions/upload-artifact@v4.6.1
       with:
         name: coverage-reports
         path: .tox/report/tmp/*
-    - name: upload-xunit-results
+    - name: ⬆️ upload-xunit-results
       uses: actions/upload-artifact@v4.6.1
       with:
         name: xunit-results
         path: .tox/py313-test/tmp/xunit-result.xml
   build:
-    name: Build distribution 📦
+    name: 🔨 Build distribution
     if: startsWith(github.ref, 'refs/tags/')
     needs:
     - validation
     runs-on: ubuntu-latest
-    container: ghcr.io/opencyphal/toxic:tx22.4.3
     steps:
     - uses: actions/checkout@v4.2.2
       with:
         persist-credentials: false
-    - name: Set up Python
+    - name: 🐍 Set up Python
       uses: actions/setup-python@v5.4.0
       with:
         python-version: "3.x"
-    - name: Install pypa/build
+    - name: ⬇️ Install tox
+      run: >-
+        python3 -m
+        pip install
+        tox
+        --user
+    - name: ⬇️ Install pypa/build
       run: >-
         python3 -m
         pip install
@@ -59,34 +65,33 @@ jobs:
     - name: 🔨 Build a binary wheel and a source tarball
       # Fails the release if the internal version doesn't match the latest tag on main.
       run: tox run -e checked_build
-    - name: Store the distribution packages
+    - name: ⬆️ Store the distribution packages
       uses: actions/upload-artifact@v4.6.1
       with:
         name: python-package-distributions
         path: dist/
   publish-to-pypi:
     name: >-
-      Publish tcpm ⊹ distribution 📦 to PyPI
+      ⬆️ Publish tcpm ⊹ distribution 📦 to PyPI
     needs:
     - build
     runs-on: ubuntu-latest
-    container: ghcr.io/opencyphal/toxic:tx22.4.3
     environment:
       name: pypi
       url: https://pypi.org/p/tcpm
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-    - name: Download all the dists
+    - name: ⬇️ Download all the dists
       uses: actions/download-artifact@v4.1.8
       with:
         name: python-package-distributions
         path: dist/
-    - name: Publish distribution 📦 to PyPI
+    - name: ⬆️ Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@v1.12.4
   github-release:
     name: >-
-      Sign tcpm ⊹ 📦 with Sigstore and upload them to GitHub Release
+      ✍️ Sign tcpm ⊹ 📦 with Sigstore and upload them to GitHub Release
     needs:
     - publish-to-pypi
     runs-on: ubuntu-latest
@@ -96,18 +101,18 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for sigstore
 
     steps:
-    - name: Download all the dists
+    - name: ⬇️ Download all the dists
       uses: actions/download-artifact@v4.1.8
       with:
         name: python-package-distributions
         path: dist/
-    - name: Sign the dists with Sigstore
+    - name: ✍️ Sign the dists with Sigstore
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
-    - name: Create GitHub Release
+    - name: 🤘 Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: >-
@@ -115,7 +120,7 @@ jobs:
         "$GITHUB_REF_NAME"
         --repo "$GITHUB_REPOSITORY"
         --notes ""
-    - name: Upload artifact signatures to GitHub Release
+    - name: ⬆️ Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       # Upload to GitHub Release using the `gh` CLI.
