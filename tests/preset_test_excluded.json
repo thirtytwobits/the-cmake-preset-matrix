@@ -1,0 +1,36 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30,
+        "patch": 0
+    },
+    "vendor": {
+        "tcpm": {
+            "version": 1,
+            "word-separator": "-",
+            "preset-groups": {
+                "configure": {
+                    "prefix": "config",
+                    "name": "preset-group-configure",
+                    "parameters": {
+                        "toolchain": [
+                            "gcc",
+                            "clang"
+                        ],
+                        "variant": [
+                            "one",
+                            "two",
+                            "three"
+                        ]
+                    },
+                    "exclude": [
+                        {
+                            "variant": "three"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

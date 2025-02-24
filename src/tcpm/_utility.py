@@ -14,16 +14,16 @@ import logging
 import shutil
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
-from ._data_model import StructuredPresets
+from ._data_model import ScopedParameter, StructuredPresets
 from ._errors import DataError
 from .cli._parser import __script_name__
 
 _utility_logger = logging.getLogger(__script_name__)
 
 
-def reduce_preset_name(group: str, configuration: tuple[tuple[str, str], ...], meta_presets: StructuredPresets) -> str:
+def reduce_preset_name(group: str, configuration: Iterable[ScopedParameter], meta_presets: StructuredPresets) -> str:
     return str(
         functools.reduce(
             lambda x, y: f"{x}{meta_presets.word_separator}{y[1]}",

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from ._data_model import PresetGroup, StructuredPresets
-from ._utility import deep_merge, list_merge, reduce_preset_name
+from ._data_model import PresetGroup, ScopedParameter, StructuredPresets
+from ._utility import deep_merge, list_merge
 
 
 def string_render(
@@ -102,25 +102,9 @@ def render_shape(group: str, preset: dict, shape: dict, parameter: str, meta_pre
 
 
 def configure_parameter_renderer(
-    parameters: dict, preset_group: PresetGroup, configuration: tuple[tuple[str, str]], _: StructuredPresets
+    parameters: dict, preset_group: PresetGroup, configuration: tuple[ScopedParameter, ...], _: StructuredPresets
 ) -> None:
     parameters["inherits"] = preset_group.common + [x[0] for x in configuration]
-
-
-def workflow_parameter_renderer(
-    parameters: dict, _: PresetGroup, configuration: tuple[tuple[str, str]], meta_presets: StructuredPresets
-) -> None:
-    if "steps" not in parameters:
-        parameters["steps"] = []
-
-    parameters["steps"] += [{"type": "configure", "name": reduce_preset_name("configure", configuration, meta_presets)}]
-
-    build_configurations = get_parameter("build", "configuration", meta_presets)
-    if build_configurations is not None:
-        for build_configuration in build_configurations:
-            build_config_tuple_list = tuple([("", build_configuration)] + list(configuration))
-            preset_name = reduce_preset_name("build", build_config_tuple_list, meta_presets)
-            parameters["steps"] += [{"type": "build", "name": preset_name}]
 
 
 def no_op_parameter_renderer(*_: Any) -> None:
@@ -129,28 +113,21 @@ def no_op_parameter_renderer(*_: Any) -> None:
 
 def get_parameters(
     group: str,
-    shape_name: str | None,
+    shape_name: str,
     meta_presets: StructuredPresets,
-) -> list[tuple[str, Any]]:
+) -> list[ScopedParameter]:
     """
     Builds a list of parameters names.
     @return: A list of tuples where the first element is the expected preset name and the second is the parameter value.
     """
-    parameters: list[tuple[str, Any]] = []
-    for parameter_name, parameter_values in getattr(meta_presets.groups, group).parameters.items():
-        if shape_name is not None and parameter_name != shape_name:
-            continue
-        rendered_values = render_parameter_value(group, parameter_name, parameter_values, meta_presets)
-        sep = meta_presets.word_separator
-        if not isinstance(rendered_values, list):
-            rendered_values = [rendered_values]
-        for rendered_value in rendered_values:
-            parameters.append(
-                (
-                    f"{group}{sep}{parameter_name}{sep}{rendered_value}",
-                    rendered_value,
-                )
-            )
+    parameters: list[ScopedParameter] = []
+    parameter_values = getattr(meta_presets.groups, group).parameters[shape_name]
+    rendered_values = render_parameter_value(group, shape_name, parameter_values, meta_presets)
+    sep = meta_presets.word_separator
+    if not isinstance(rendered_values, list):
+        rendered_values = [rendered_values]
+    for rendered_value in rendered_values:
+        parameters.append(ScopedParameter(sep, group, shape_name, rendered_value))
     return parameters
 
 
@@ -173,5 +150,5 @@ param_renderer_map: dict[str, Callable] = {
     "build": no_op_parameter_renderer,
     "test": no_op_parameter_renderer,
     "package": no_op_parameter_renderer,
-    "workflow": workflow_parameter_renderer,
+    "workflow": no_op_parameter_renderer,
 }

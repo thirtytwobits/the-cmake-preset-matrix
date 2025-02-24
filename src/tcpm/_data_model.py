@@ -7,13 +7,68 @@ Data model for the presets file.
 """
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterable
 
 from ._errors import VendorDataError
 
 __vendor_data_version__ = 1
 __default_word_separator__ = "-"
 __vendor_section_key__ = "tcpm"
+
+
+class ScopedParameter:
+    """
+    A parameter key/value pair scoped to a preset.
+    """
+
+    def __init__(self, sep: str, group: str, parameter: str, value: str):
+        self._sep = sep
+        self._group = group
+        self._parameter = parameter
+        self._value = value
+
+    @property
+    def preset_scope(self) -> str:
+        return f"{self._group}{self._sep}{self._parameter}{self._sep}{self._value}"
+
+    @property
+    def group(self) -> str:
+        return self._group
+
+    @property
+    def parameter(self) -> str:
+        return self._parameter
+
+    @property
+    def value(self) -> str:
+        return self._value
+
+    def __getitem__(self, field_name: str | int) -> Any:
+        """
+        Python Data Model: subscriptable
+        """
+        if field_name == 0:
+            return self.preset_scope
+        elif field_name == 1:
+            return self.value
+        elif isinstance(field_name, int):
+            raise IndexError(f"Index out of range: {field_name}")
+        else:
+            return getattr(self, field_name)
+
+    def __iter__(self) -> Iterable[str]:
+        return iter([self.preset_scope, self.value])
+
+
+ShapedParameters = dict[str, list[ScopedParameter]]
+"""
+a dictionary of shapes and their parameters scoped to a preset.
+"""
+
+ExcludeList = list[dict[str, str]]
+"""
+A list of excluded configurations.
+"""
 
 
 @dataclass
@@ -27,7 +82,8 @@ class PresetGroup:
     common: list[str]
     shape: dict
     parameters: dict[str, list]
-    excludes: list[dict[str, str]]
+    shape_parameters: dict[str, list]
+    exclude: ExcludeList
 
     def __getitem__(self, field_name: str) -> Any:
         """
@@ -80,11 +136,11 @@ def make_default_meta_presets() -> StructuredPresets:
     Create a structured representation of an empty presets file.
     """
     groups = Presets(
-        configure=PresetGroup("", "", [], {}, {}, []),
-        build=PresetGroup("", "", [], {}, {}, []),
-        test=PresetGroup("", "", [], {}, {}, []),
-        package=PresetGroup("", "", [], {}, {}, []),
-        workflow=PresetGroup("", "", [], {}, {}, []),
+        configure=PresetGroup("", "", [], {}, {}, {}, []),
+        build=PresetGroup("", "", [], {}, {}, {}, []),
+        test=PresetGroup("", "", [], {}, {}, {}, []),
+        package=PresetGroup("", "", [], {}, {}, {}, []),
+        workflow=PresetGroup("", "", [], {}, {}, {}, []),
     )
 
     meta_presets: StructuredPresets = StructuredPresets(
@@ -114,6 +170,10 @@ def backfill_shapes(group: PresetGroup) -> None:
     If no shape is defined for a given parameter backfill with an empty dictionary.
     """
     for parameter_name in group.parameters:
+        if parameter_name not in group.shape:
+            group.shape[parameter_name] = {}
+
+    for parameter_name in group.shape_parameters:
         if parameter_name not in group.shape:
             group.shape[parameter_name] = {}
 
@@ -168,7 +228,8 @@ def make_meta_presets(json_presets: dict) -> StructuredPresets:
         group.common = preset_group["common"] if "common" in preset_group else []
         group.shape = preset_group["shape"] if "shape" in preset_group else {}
         group.parameters = preset_group["parameters"] if "parameters" in preset_group else {}
-        group.excludes = preset_group["excludes"] if "excludes" in preset_group else []
+        group.shape_parameters = preset_group["shape-parameters"] if "shape-parameters" in preset_group else {}
+        group.exclude = preset_group["exclude"] if "exclude" in preset_group else []
         backfill_shapes(group)
 
     return meta_presets

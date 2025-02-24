@@ -31,3 +31,22 @@ def test_cmake_presets():
     assert "m32" == meta_presets.source["configurePresets"][2]["cacheVariables"]["MY_TARGET_PLATFORM"]
 
     print(json.dumps(meta_presets.source, indent=4))
+
+
+def test_excludes():
+    """
+    Uses preset_test_excluded.json to test the exclude list.
+    """
+    current_file_path = Path(__file__).parent
+    test_document = current_file_path / Path("preset_test_excluded.json")
+
+    with test_document.open("r", encoding="UTF-8") as f:
+        json_presets = json.load(f)
+
+    meta_presets = make_meta_presets(json_presets)
+
+    transform_in_place(meta_presets, 0)
+
+    assert len(meta_presets.source["configurePresets"]) == 6
+
+    print(json.dumps(meta_presets.source, indent=4))
