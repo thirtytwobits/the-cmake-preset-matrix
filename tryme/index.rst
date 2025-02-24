@@ -51,12 +51,17 @@ go over each item in this object:
     - object[string, array[string]]
     - This is where the magic happens. Parameters define each dimension of a matrix and it is the cartesian product of
       each of these parameter lists that `TCPM`_ uses to generate new presets.
+  * - ``"shape-parameters"``
+    - no
+    - object[string, array[string]]
+    - The same as parameters except these are not used to create presets but, for any presets created, are used to
+      instatiate parameterized shapes for each preset.
   * - ``"shape"``
     - no
     - object[string, object]
-    - Shapes act like templates for parameters. Each shape is used when a given parameter is part of a new preset
-      definition to append additional data to the preset object. ``"cacheVariables"``, for example, can be defined
-      for new presets using shapes.
+    - Shapes act like templates for parameters and shape-parameters. Each shape is used when a given parameter is part
+      of a new preset definition to append additional data to the preset object. ``"cacheVariables"``, for example, can
+      be defined for new presets using shapes whereas worflow steps can be defined using shape-parameterized shapes.
 
 In our example we generated every posible configuration needed to build a project for three different toolchains using
 three different C++ standards. Let's suppose we want to run these build presets using Github Actions. We'd find that
@@ -106,9 +111,10 @@ result set using ``exclude``. For example:
       }
   ],
 
-Try adding this to the ``CMakePresetsVendorTemplate.json`` under ``["vendor"]["tcpm"]["preset-groups"]["configure"]``.
-Now do ``tcpm -f`` (``-f`` to force overwrite of the existing ``CMakePresets.json`` file) and you'll have a slightly
-smaller presets file that does not allow configuring for gcc-native-32 when also using c++ 20.
+Try adding the above exclude to the ``CMakePresetsVendorTemplate.json`` under
+``["vendor"]["tcpm"]["preset-groups"]["configure"]``. Now do ``tcpm -f`` (``-f`` to force overwrite of the existing
+``CMakePresets.json`` file) and you'll have a slightly smaller presets file that does not allow configuring for
+gcc-native-32 when also using c++ 20.
 
 .. _`CMakePresets.json`: https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html
 .. _`TCPM`: https://github.com/thirtytwobits/the-cmake-preset-matrix
