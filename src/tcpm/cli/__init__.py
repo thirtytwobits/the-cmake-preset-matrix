@@ -12,6 +12,7 @@ import re
 import sys
 from dataclasses import fields
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 from .._core import transform_in_place
@@ -117,6 +118,32 @@ def write_to_stdout(args: Any, meta_presets: Any) -> int:
     return 0
 
 
+def read_and_merge_template_and_presets(template_file: Path, presets_file: Path) -> dict[str, Any] | None:
+    """
+    Read the template and presets files and merge them into a single dictionary.
+    """
+    if template_file.exists():
+        with template_file.open("r", encoding="UTF-8") as f:
+            json_template = json.load(f)
+    else:
+        json_template = None
+
+    if presets_file.exists():
+        with presets_file.open("r", encoding="UTF-8") as f:
+            existing_json_presets = json.load(f)
+        if json_template is not None:
+            if "vendor" in existing_json_presets and "tcpm" in existing_json_presets["vendor"]:
+                del existing_json_presets["vendor"]["tcpm"]
+            json_presets = {**json_template, **existing_json_presets}
+            json_presets["vendor"]["tcpm"] = json_template["vendor"]["tcpm"]
+        else:
+            json_presets = existing_json_presets
+    else:
+        json_presets = json_template
+
+    return json_presets
+
+
 def cli_main(args: Any | None = None) -> int:
     """
     Idempotent (mostly) generation of CMake presets based the contents of the vendor section of the presets file.
@@ -138,14 +165,10 @@ def cli_main(args: Any | None = None) -> int:
     else:
         logging.Logger.setLevel(_cli_logger, logging.INFO)
 
-    source_file = args.template_file if args.template_file.exists() else args.presets_file
-    try:
-        with source_file.open("r", encoding="UTF-8") as f:
-            json_presets = json.load(f)
-    except FileNotFoundError:
-        _cli_logger.error("File not found: %s", source_file)
+    json_presets = read_and_merge_template_and_presets(args.template_file, args.presets_file)
+    if json_presets is None:
+        _cli_logger.error("No presets file found.")
         return 1
-
     meta_presets = make_meta_presets(json_presets)
 
     try:

@@ -34,3 +34,23 @@ def test_default(capsys: pytest.CaptureFixture):
     print(captured)
     result_document = json.loads(captured)
     assert result_document["version"] == 9
+
+
+def test_maintains_unmanaged(capsys: pytest.CaptureFixture):
+    """
+    Makes sure that unmanaged presets are retained.
+    """
+    current_file_path = Path(__file__).parent
+    test_document = current_file_path / Path("preset_test_ignore_unmanaged.json")
+    assert test_document.exists()
+
+    cli_main(["--non-interactive", "--presets-file", test_document.as_posix(), "--stdout", "--no-schema-validation"])
+
+    captured = capsys.readouterr().out
+    # re-print so we can see the document in pytest output
+    print(captured)
+
+    result_document = json.loads(captured)
+
+    assert "manual-entry" in [x["name"] for x in result_document["buildPresets"]]
+    assert "another-manual-entry" in [x["name"] for x in result_document["workflowPresets"]]

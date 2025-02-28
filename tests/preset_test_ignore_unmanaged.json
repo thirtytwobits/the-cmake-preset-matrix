@@ -1,0 +1,71 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "configure-common",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "warnings": {
+                "deprecated": true,
+                "uninitialized": true
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_PREFIX_PATH": "${sourceParentDir}",
+                "CMAKE_CONFIGURATION_TYPES": "Release;RelSize;Debug",
+                "CMAKE_CROSS_CONFIGS": "all",
+                "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
+                "CMAKE_DEFAULT_CONFIGS": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "manual-entry"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "another-manual-entry"
+        }
+    ],
+    "vendor": {
+        "tcpm": {
+            "version": 1,
+            "preset-groups": {
+                "configure": {
+                    "name": "preset-group-config",
+                    "common": [
+                        "configure-common"
+                    ],
+                    "parameters": {
+                        "toolchain": [
+                            "gcc",
+                            "clang"
+                        ]
+                    }
+                },
+                "build": {
+                    "parameters": {
+                        "configuration": "$('configurePresets #configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')",
+                        "toolchain": "$('#preset-group-config parameters toolchain').json()"
+                    }
+                },
+                "workflow": {
+                    "parameters": {
+                        "toolchain": "$('#preset-group-config parameters toolchain').json()"
+                    },
+                    "shape-parameters": {
+                        "configuration": "$('configurePresets #configure-common cacheVariables CMAKE_CONFIGURATION_TYPES').text().split(';')"
+                    }
+                }
+            }
+        }
+    }
+}

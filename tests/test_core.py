@@ -50,3 +50,23 @@ def test_excludes():
     print(json.dumps(meta_presets.source, indent=4))
 
     assert len(meta_presets.source["configurePresets"]) == 9
+
+
+def test_maintains_unmanaged():
+    """
+    Makes sure that unmanaged presets are retained.
+    """
+    current_file_path = Path(__file__).parent
+    test_document = current_file_path / Path("preset_test_ignore_unmanaged.json")
+
+    with test_document.open("r", encoding="UTF-8") as f:
+        json_presets = json.load(f)
+
+    meta_presets = make_meta_presets(json_presets)
+
+    transform_in_place(meta_presets, 0)
+
+    print(json.dumps(meta_presets.source, indent=4))
+
+    assert "manual-entry" in [x["name"] for x in meta_presets.source["buildPresets"]]
+    assert "another-manual-entry" in [x["name"] for x in meta_presets.source["workflowPresets"]]

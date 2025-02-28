@@ -190,20 +190,23 @@ def make_matrix_presets(
         preset: dict[str, Any] = {"name": preset_name}
         if hidden:
             preset["hidden"] = True
-        for scoped_parameter in configuration:
-            shape_template = parameter_shape_map[scoped_parameter.value]
-            rendered = render_shape(group, {"name": preset_name}, shape_template, scoped_parameter.value, meta_presets)
-            deep_merge(preset, rendered)
-        for shape_parameter_name, shape_parameter_list in preset_group.shape_parameters.items():
-            for shape_parameter_value in shape_parameter_list:
-                try:
-                    shape_template = preset_group.shape[shape_parameter_name]
-                except KeyError:
-                    continue
+        if group != "configure":
+            for scoped_parameter in configuration:
+                shape_template = parameter_shape_map[scoped_parameter.value]
                 rendered = render_shape(
-                    group, {"name": preset_name}, shape_template, shape_parameter_value, meta_presets
+                    group, {"name": preset_name}, shape_template, scoped_parameter.value, meta_presets
                 )
                 deep_merge(preset, rendered)
+            for shape_parameter_name, shape_parameter_list in preset_group.shape_parameters.items():
+                for shape_parameter_value in shape_parameter_list:
+                    try:
+                        shape_template = preset_group.shape[shape_parameter_name]
+                    except KeyError:
+                        continue
+                    rendered = render_shape(
+                        group, {"name": preset_name}, shape_template, shape_parameter_value, meta_presets
+                    )
+                    deep_merge(preset, rendered)
         parameter_renderer(preset, preset_group, configuration, meta_presets)
         if preset_name in presets:
             presets[preset_name].update(preset)

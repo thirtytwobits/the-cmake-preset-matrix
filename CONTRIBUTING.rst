@@ -20,9 +20,13 @@ tox
 
 Starting clean:
 
+.. code-block:: bash
+
     git clean -Xdf
 
 Setting up a local development environment:
+
+.. code-block:: bash
 
     tox --devenv .venv-py3.13 -e py313
     source .venv-py3.13/bin/activate
@@ -30,9 +34,13 @@ Setting up a local development environment:
 
 Running the tests:
 
+.. code-block:: bash
+
     tox run-parallel
 
 Generating coverage reports:
+
+.. code-block:: bash
 
     tox run -e report
 
@@ -43,9 +51,13 @@ Generating coverage reports:
 
 Running linters:
 
+.. code-block:: bash
+
     tox run -e lint
 
 Building the docs:
+
+.. code-block:: bash
 
     tox run -e docs
 
@@ -53,6 +65,7 @@ Building the docs:
 pre-commit hooks
 ================================================
 
+.. code-block:: bash
 
     pip install pre-commit
     pre-commit install
