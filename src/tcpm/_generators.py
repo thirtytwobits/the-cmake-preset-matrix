@@ -199,6 +199,10 @@ def make_matrix_presets(
                 deep_merge(preset, rendered)
             for shape_parameter_name, shape_parameter_list in preset_group.shape_parameters.items():
                 for shape_parameter_value in shape_parameter_list:
+                    if is_excluded(
+                        [ScopedParameter(".", group, shape_parameter_name, shape_parameter_value)], preset_group.exclude
+                    ):
+                        continue
                     try:
                         shape_template = preset_group.shape[shape_parameter_name]
                     except KeyError:
