@@ -47,7 +47,7 @@ jobs:
       with:
         persist-credentials: false
     - name: 🐍 Set up Python
-      uses: actions/setup-python@v5.4.0
+      uses: actions/setup-python@v5.5.0
       with:
         python-version: "3.x"
     - name: ⬇️ Install tox
