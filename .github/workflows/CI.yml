@@ -27,12 +27,12 @@ jobs:
     - name: 📉 report
       run: tox run -e report
     - name: ⬆️ upload-coverage-reports
-      uses: actions/upload-artifact@v4.6.1
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: coverage-reports
         path: .tox/report/tmp/*
     - name: ⬆️ upload-xunit-results
-      uses: actions/upload-artifact@v4.6.1
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: xunit-results
         path: .tox/py313-test/tmp/xunit-result.xml
@@ -66,7 +66,7 @@ jobs:
       # Fails the release if the internal version doesn't match the ref provided here
       run: tox run -e checked_build -- --tag=${{ github.ref }}
     - name: ⬆️ Store the distribution packages
-      uses: actions/upload-artifact@v4.6.1
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: python-package-distributions
         path: dist/
