@@ -43,6 +43,12 @@ class ScopedParameter:
     def value(self) -> str:
         return self._value
 
+    def __str__(self) -> str:
+        return self.preset_scope
+
+    def __repr__(self) -> str:
+        return f"ScopedParameter({self._sep!r}, {self._group!r}, {self._parameter!r}, {self._value!r})"
+
     def __getitem__(self, field_name: str | int) -> Any:
         """
         Python Data Model: subscriptable

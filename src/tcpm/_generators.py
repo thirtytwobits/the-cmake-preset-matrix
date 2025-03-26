@@ -8,10 +8,14 @@ Various functions for generating presets.
 
 import itertools
 from typing import Any, Iterable
+import logging
 
 from ._data_model import ExcludeList, ScopedParameter, ShapedParameters, StructuredPresets
 from ._rendering import get_parameters, param_renderer_map, render_shape
 from ._utility import deep_merge, filter_matrix_group_by_visibility, reduce_preset_name
+from .cli._parser import __script_name__
+
+_generators_logger = logging.getLogger(__script_name__)
 
 ParameterShapeMap = dict[str, dict]
 """
@@ -133,6 +137,7 @@ def is_excluded(configuration: Iterable[ScopedParameter], exclude: ExcludeList) 
             else:
                 applicable -= 1
         if matches == applicable and matches == len(rule):
+            _generators_logger.debug("Excluding %s because of %s", configuration, rule)
             return True
     return False
 
@@ -200,7 +205,9 @@ def make_matrix_presets(
             for shape_parameter_name, shape_parameter_list in preset_group.shape_parameters.items():
                 for shape_parameter_value in shape_parameter_list:
                     if is_excluded(
-                        [ScopedParameter(".", group, shape_parameter_name, shape_parameter_value)], preset_group.exclude
+                        list(configuration)
+                        + [ScopedParameter(".", group, shape_parameter_name, shape_parameter_value)],
+                        preset_group.exclude,
                     ):
                         continue
                     try:
