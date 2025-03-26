@@ -7,8 +7,8 @@ Various functions for generating presets.
 """
 
 import itertools
-from typing import Any, Iterable
 import logging
+from typing import Any, Iterable
 
 from ._data_model import ExcludeList, ScopedParameter, ShapedParameters, StructuredPresets
 from ._rendering import get_parameters, param_renderer_map, render_shape
