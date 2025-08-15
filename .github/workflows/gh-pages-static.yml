@@ -30,7 +30,7 @@ jobs:
     container: ghcr.io/opencyphal/toxic:tx22.4.3
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - name: docs
         run: tox run -e docs
       - name: Setup Pages
