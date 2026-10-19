@@ -27,7 +27,7 @@ def string_render(
     - {parameter}: The parameter.
     - {name}: The name of the preset.
     - {groups}: The preset groups.
-    - {prefix): The prefix of the group.
+    - {prefix}: The prefix of the group.
     - {value}: The value of the string before expansion.
     - {static:[value]}: Any value listed in the static dictionary for this document.
 
@@ -125,13 +125,14 @@ def get_parameters(
     @return: A list of tuples where the first element is the expected preset name and the second is the parameter value.
     """
     parameters: list[ScopedParameter] = []
-    parameter_values = getattr(meta_presets.groups, group).parameters[shape_name]
+    preset_group = getattr(meta_presets.groups, group)
+    parameter_values = preset_group.parameters[shape_name]
     rendered_values = render_parameter_value(group, shape_name, parameter_values, meta_presets)
     sep = meta_presets.word_separator
     if not isinstance(rendered_values, list):
         rendered_values = [rendered_values]
     for rendered_value in rendered_values:
-        parameters.append(ScopedParameter(sep, group, shape_name, rendered_value))
+        parameters.append(ScopedParameter(sep, preset_group.prefix, shape_name, rendered_value))
     return parameters
 
 

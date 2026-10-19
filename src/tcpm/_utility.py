@@ -101,6 +101,13 @@ def merge_preset_list(d1: list[dict], d2: dict[str, dict]) -> list[dict]:
     """
     Merge new presets into an existing preset list.
     """
+    for preset in d1:
+        incoming = d2.get(preset["name"])
+        if incoming is not None and preset.get("hidden", False) != incoming.get("hidden", False):
+            raise DataError(
+                f"Preset name collision for '{preset['name']}': hidden and visible presets cannot share a name. "
+                "Rename the preset or change the parameter names or values."
+            )
     copy_of_d2 = d2.copy()
     for preset in d1:
         preset_name = preset["name"]
@@ -195,8 +202,21 @@ def _clean_source(
         return x["name"] in getattr(meta_presets.groups, group).common
 
     def name_clause(x: dict[str, str]) -> bool:
-        prefix = f"{getattr(meta_presets.groups, group).prefix}{meta_presets.word_separator}"
-        return x["name"].startswith(prefix)
+        preset_group = getattr(meta_presets.groups, group)
+        sep = meta_presets.word_separator
+        prefix = f"{preset_group.prefix}{sep}"
+        # Older versions used the group name for hidden parameter presets even with a custom prefix.
+        legacy_parameter = (
+            hidden
+            and group == "configure"
+            and preset_group.prefix != group
+            and any(
+                x["name"].startswith(f"{group}{sep}{parameter}{sep}")
+                for parameter in preset_group.parameters
+                if parameter != "$comment"
+            )
+        )
+        return x["name"].startswith(prefix) or legacy_parameter
 
     if (not pre_clean and clean_level == 1) or (pre_clean and clean_level >= 2):
         meta_presets.source[source_key] = [

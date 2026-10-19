@@ -160,7 +160,7 @@ def make_default_meta_presets() -> StructuredPresets:
     for group_field in fields(groups):
         group = getattr(groups, group_field.name)
         group.name = group_field.name
-        group.prefix = f"{group_field.name}{meta_presets.word_separator}"
+        group.prefix = group_field.name
     return meta_presets
 
 
