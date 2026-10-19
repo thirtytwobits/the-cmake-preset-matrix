@@ -5,6 +5,7 @@
 """
 Version utility
 """
+
 import sys
 
 __version__ = "0.3.3"  # This is the version of the package. Flit will use this to set the version in the wheel.

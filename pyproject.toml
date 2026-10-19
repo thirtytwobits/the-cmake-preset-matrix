@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3,<4"]
+requires = ["flit_core >=3,<5"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -26,16 +26,16 @@ dependencies = ["parsimonious"]
 test = [
     "types-parsimonious",
     "tox>=4.19.0",
-    "black==25.1.0",
+    "black==26.10.1",
     "colorama",
     "coverage",
-    "check-manifest==0.50",
+    "check-manifest==0.51",
     "flake8-bugbear",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
     "flake8-pyproject",
-    "isort==6.0.0",
+    "isort==9.0.2",
     "lxml",
     "mypy",
     "pre-commit",

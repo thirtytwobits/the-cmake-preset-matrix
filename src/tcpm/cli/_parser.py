@@ -22,8 +22,7 @@ def make_parser() -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description=textwrap.dedent(
-            """
+        description=textwrap.dedent("""
             Generate CMake presets based on given options. See
             https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html for details on cmake presets.
 
@@ -40,15 +39,12 @@ def make_parser() -> argparse.ArgumentParser:
 
             See https://thirtytwobits.github.io/the-cmake-preset-matrix for more information.
 
-    """
-        ).lstrip(),
-        epilog=textwrap.dedent(
-            f"""
+    """).lstrip(),
+        epilog=textwrap.dedent(f"""
 
         Version: {tcpm_version}
 
-    """
-        ),
+    """),
     )
 
     parser.add_argument(
@@ -98,15 +94,13 @@ def make_parser() -> argparse.ArgumentParser:
         "-i",
         type=Path,
         default=Path("CMakePresetsVendorTemplate.json"),
-        help=textwrap.dedent(
-            """
+        help=textwrap.dedent("""
             A file to use as a template for the presets file. The template file is used to generate the presets file
             if it does not exist. If the template file and the presets file are the same, the presets file is updated
             in place using itself as the template. TCPM is designed to be idempotent, so using a presets file as its
             own template will not change the file unless changes are made that affect preset generation.
 
-    """
-        ).lstrip(),
+    """).lstrip(),
     )
 
     parser.add_argument(
