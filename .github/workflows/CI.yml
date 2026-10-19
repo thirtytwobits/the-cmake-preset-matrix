@@ -17,7 +17,7 @@ jobs:
     name: 🧪 run unit tests
     container: ghcr.io/opencyphal/toxic:tx22.4.3
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         submodules: true
     - name: 🧪 lint
@@ -28,12 +28,12 @@ jobs:
     - name: 📉 report
       run: tox run -e report
     - name: ⬆️ upload-coverage-reports
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: coverage-reports
         path: .tox/report/tmp/*
     - name: ⬆️ upload-xunit-results
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: xunit-results
         path: .tox/py313-test/tmp/xunit-result.xml
@@ -57,11 +57,11 @@ jobs:
     - validation-python314
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: 🐍 Set up Python
-      uses: actions/setup-python@v6.0.0
+      uses: actions/setup-python@v7.0.0
       with:
         python-version: "3.x"
     - name: ⬇️ Install tox
@@ -80,7 +80,7 @@ jobs:
       # Fails the release if the internal version doesn't match the ref provided here
       run: tox run -e checked_build -- --tag=${{ github.ref }}
     - name: ⬆️ Store the distribution packages
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: python-package-distributions
         path: dist/
@@ -97,12 +97,12 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: ⬇️ Download all the dists
-      uses: actions/download-artifact@v4.3.0
+      uses: actions/download-artifact@v8.0.2
       with:
         name: python-package-distributions
         path: dist/
     - name: ⬆️ Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.13.0
+      uses: pypa/gh-action-pypi-publish@v1.14.2
   github-release:
     name: >-
       ✍️ Sign tcpm ⊹ 📦 with Sigstore and upload them to GitHub Release
@@ -116,12 +116,12 @@ jobs:
 
     steps:
     - name: ⬇️ Download all the dists
-      uses: actions/download-artifact@v4.3.0
+      uses: actions/download-artifact@v8.0.2
       with:
         name: python-package-distributions
         path: dist/
     - name: ✍️ Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v3.1.0
+      uses: sigstore/gh-action-sigstore-python@v3.5.0
       with:
         inputs: >-
           ./dist/*.tar.gz
