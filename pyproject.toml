@@ -16,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 requires-python = ">=3.10"
 dynamic = ["version"]
@@ -139,7 +140,7 @@ log_cli_level = "WARNING"
 # +---------------------------------------------------------------------------+
 [tool.tox]
 requires = ["tox>=4.19", "virtualenv>20.2"]
-env_list = ["py310-test", "py311-test", "py312-test", "py313-test"]
+env_list = ["py310-test", "py311-test", "py312-test", "py313-test", "py314-test"]
 
 [tool.tox.env_run_base]
 description = "Run pytest under {base_python}"
