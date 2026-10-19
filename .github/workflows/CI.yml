@@ -49,6 +49,8 @@ jobs:
       with:
         name: xunit-results
         path: .tox/py*-test/tmp/xunit-result.xml
+        include-hidden-files: true
+        if-no-files-found: error
   build:
     name: 🔨 Build distribution
     if: startsWith(github.ref, 'refs/tags/')
