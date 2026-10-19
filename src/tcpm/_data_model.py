@@ -6,7 +6,7 @@
 Data model for the presets file.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Any, Iterable
 
 from ._errors import VendorDataError
@@ -157,10 +157,10 @@ def make_default_meta_presets() -> StructuredPresets:
         onload=[],
         groups=groups,
     )
-    for preset_group_name, _ in groups.__annotations__.items():
-        group = getattr(groups, preset_group_name)
-        group.name = preset_group_name
-        group.prefix = f"{preset_group_name}{meta_presets.word_separator}"
+    for group_field in fields(groups):
+        group = getattr(groups, group_field.name)
+        group.name = group_field.name
+        group.prefix = f"{group_field.name}{meta_presets.word_separator}"
     return meta_presets
 
 
@@ -168,7 +168,7 @@ def get_preset_group_names() -> list[str]:
     """
     Get the names of the preset groups.
     """
-    return [f"{group}Presets" for group in list(Presets.__annotations__.keys())]
+    return [f"{group_field.name}Presets" for group_field in fields(Presets)]
 
 
 def backfill_shapes(group: PresetGroup) -> None:
