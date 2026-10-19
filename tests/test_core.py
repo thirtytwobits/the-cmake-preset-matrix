@@ -12,6 +12,7 @@ import pytest
 
 from tcpm._core import transform_in_place
 from tcpm._data_model import make_meta_presets
+from tcpm._errors import DataError
 
 
 def test_cmake_presets():
@@ -132,6 +133,95 @@ def test_preset_prefixes(clean, custom_prefixes):
     first_result = deepcopy(meta_presets.source)
     transform_in_place(meta_presets, clean)
     assert meta_presets.source == first_result
+
+
+@pytest.mark.parametrize("clean", [0, 1, 2])
+@pytest.mark.parametrize("sep", ["-", "."])
+def test_clean_legacy_parameter_presets(clean, sep):
+    """Clean old hidden names while retaining common presets and unrelated manual entries."""
+    legacy_name = f"configure{sep}mode{sep}debug"
+    obsolete_name = f"configure{sep}mode{sep}obsolete"
+    common_name = f"configure{sep}mode{sep}common"
+    manual_name = f"configure{sep}manual{sep}debug"
+    visible_name = f"configure{sep}mode{sep}manual"
+    retained = [
+        {"name": common_name, "hidden": True},
+        {"name": manual_name, "hidden": True},
+        {"name": visible_name},
+    ]
+    document = {
+        "version": 10,
+        "configurePresets": [
+            {"name": legacy_name, "hidden": True},
+            {"name": obsolete_name, "hidden": True},
+            *deepcopy(retained),
+        ],
+        "vendor": {
+            "tcpm": {
+                "version": 1,
+                "word_separator": sep,
+                "preset-groups": {
+                    "configure": {"prefix": "config", "common": [common_name], "parameters": {"mode": ["debug"]}}
+                },
+            }
+        },
+    }
+    meta_presets = make_meta_presets(document)
+    transform_in_place(meta_presets, clean)
+    presets = {preset["name"]: preset for preset in meta_presets.source["configurePresets"]}
+    assert (legacy_name in presets) == (clean == 0)
+    assert (obsolete_name in presets) == (clean == 0)
+    for preset in retained:
+        assert presets[preset["name"]] == preset
+    hidden_name = f"config{sep}mode{sep}debug"
+    assert presets[hidden_name]["hidden"] is True
+    assert presets[f"config{sep}debug"]["inherits"] == [common_name, hidden_name]
+    first_result = deepcopy(meta_presets.source)
+    transform_in_place(meta_presets, clean)
+    assert meta_presets.source == first_result
+
+
+@pytest.mark.parametrize("clean", [0, 1, 2])
+@pytest.mark.parametrize("prefix", ["configure", "config"])
+def test_reject_hidden_visible_name_collision(clean, prefix):
+    """Report ambiguous generated names instead of silently hiding the visible preset."""
+    document = {
+        "version": 10,
+        "vendor": {
+            "tcpm": {
+                "version": 1,
+                "preset-groups": {"configure": {"prefix": prefix, "parameters": {"mode": ["debug", "mode-debug"]}}},
+            }
+        },
+    }
+    meta_presets = make_meta_presets(document)
+    with pytest.raises(DataError, match=f"Preset name collision for '{prefix}-mode-debug'"):
+        transform_in_place(meta_presets, clean)
+
+
+def test_excluded_name_collision_does_not_block_generation():
+    """An excluded matrix preset does not collide with the surviving hidden parameter preset."""
+    document = {
+        "version": 10,
+        "vendor": {
+            "tcpm": {
+                "version": 1,
+                "preset-groups": {
+                    "configure": {
+                        "prefix": "config",
+                        "parameters": {"mode": ["debug", "mode-debug"]},
+                        "exclude": [{"mode": "mode-debug"}],
+                    }
+                },
+            }
+        },
+    }
+    meta_presets = make_meta_presets(document)
+    transform_in_place(meta_presets, 2)
+    presets = {preset["name"]: preset for preset in meta_presets.source["configurePresets"]}
+    assert set(presets) == {"config-mode-debug", "config-debug"}
+    assert presets["config-mode-debug"]["hidden"] is True
+    assert presets["config-debug"]["inherits"] == ["config-mode-debug"]
 
 
 @pytest.mark.parametrize("clean", [0, 1, 2])

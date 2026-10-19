@@ -32,6 +32,15 @@ the hidden preset ``config-mode-debug`` and the visible preset ``config-debug``.
 from ``config-mode-debug``. Shape templates can use ``{prefix}`` for the current group's prefix and
 ``{groups[configure][prefix]}`` to reference the configure group's prefix from another group.
 
+When upgrading files generated before custom prefixes were applied to hidden presets, use ``--clean`` to remove
+legacy hidden names such as ``configure-mode-debug``. Cleanup recognizes the legacy namespaces of the configure
+group's current parameter names, including obsolete values, while retaining presets listed in ``common``.
+Without ``--clean``, existing presets remain in the document.
+
+Hidden and visible presets must have distinct names. For example, ``"mode": ["debug", "mode-debug"]`` would
+generate ``config-mode-debug`` as both a hidden and a visible preset. TCPM reports a name collision instead of
+merging these objects; change the parameter names or values to remove the ambiguity.
+
 Comments
 ================================================
 

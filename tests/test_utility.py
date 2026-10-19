@@ -6,7 +6,23 @@
 
 import pytest
 
-from tcpm._utility import deep_merge, merge_comments
+from tcpm._errors import DataError
+from tcpm._utility import deep_merge, merge_comments, merge_preset_list
+
+
+@pytest.mark.parametrize("existing_hidden, incoming_hidden", [(True, False), (False, True), (True, None), (None, True)])
+def test_merge_rejects_visibility_collision_without_mutation(existing_hidden, incoming_hidden):
+    """Reject collisions in either direction before merging earlier, nonconflicting entries."""
+    existing = [{"name": "other", "displayName": "Keep"}, {"name": "same"}]
+    incoming = {"other": {"name": "other", "displayName": "Changed"}, "same": {"name": "same"}}
+    if existing_hidden is not None:
+        existing[1]["hidden"] = existing_hidden
+    if incoming_hidden is not None:
+        incoming["same"]["hidden"] = incoming_hidden
+    with pytest.raises(DataError, match="Preset name collision for 'same'"):
+        merge_preset_list(existing, incoming)
+    assert existing[0]["displayName"] == "Keep"
+    assert existing[1].get("hidden") == existing_hidden
 
 
 @pytest.mark.parametrize(
