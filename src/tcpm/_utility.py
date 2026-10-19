@@ -14,6 +14,7 @@ import json
 import logging
 import shutil
 import urllib.request
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -49,7 +50,12 @@ def deep_merge(d1: dict, d2: dict) -> None:
     """
     for key, value in d2.items():
         if key in d1:
-            if isinstance(d1[key], dict):
+            if key == "$comment":
+                if d1[key] != value:
+                    comments = deepcopy(d1[key]) if isinstance(d1[key], list) else [deepcopy(d1[key])]
+                    list_merge(comments, deepcopy(value) if isinstance(value, list) else [deepcopy(value)])
+                    d1[key] = comments
+            elif isinstance(d1[key], dict):
                 if isinstance(value, dict):
                     deep_merge(d1[key], value)
                 else:
@@ -60,6 +66,32 @@ def deep_merge(d1: dict, d2: dict) -> None:
                 d1[key] = value
         else:
             d1[key] = value
+
+
+def merge_comments(source: Any, target: Any) -> None:
+    """Restore comments on surviving objects without restoring obsolete preset fields."""
+    if isinstance(source, dict) and isinstance(target, dict):
+        for key, value in source.items():
+            if key == "$comment":
+                deep_merge(target, {key: deepcopy(value)})
+            elif key in target:
+                merge_comments(value, target[key])
+    elif isinstance(source, list) and isinstance(target, list):
+        # Presets and workflow steps can move during regeneration. Match these by identity,
+        # keeping the step type distinct when configure/build steps share a name.
+        named_targets = {
+            (item["name"], item.get("type") if isinstance(item.get("type"), str) else None): item
+            for item in target
+            if isinstance(item, dict) and isinstance(item.get("name"), str)
+        }
+        for index, item in enumerate(source):
+            if isinstance(item, dict) and isinstance(item.get("name"), str):
+                item_type = item.get("type") if isinstance(item.get("type"), str) else None
+                match = named_targets.get((item["name"], item_type))
+                if match is not None:
+                    merge_comments(item, match)
+            elif index < len(target):
+                merge_comments(item, target[index])
 
 
 def merge_preset_list(d1: list[dict], d2: dict[str, dict]) -> list[dict]:

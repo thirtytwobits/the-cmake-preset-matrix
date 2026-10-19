@@ -8,6 +8,7 @@ Various functions for rendering values in the presets file.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Callable
 
 from ._data_model import PresetGroup, ScopedParameter, StructuredPresets
@@ -57,8 +58,8 @@ def _recursive_expand(
 ) -> Any:
     if isinstance(value_template, dict):
         return {
-            _recursive_expand(group, preset_name, k, parameter, meta_presets): _recursive_expand(
-                group, preset_name, v, parameter, meta_presets
+            _recursive_expand(group, preset_name, k, parameter, meta_presets): (
+                deepcopy(v) if k == "$comment" else _recursive_expand(group, preset_name, v, parameter, meta_presets)
             )
             for k, v in value_template.items()
         }
@@ -88,6 +89,9 @@ def render_shape(group: str, preset: dict, shape: dict, parameter: str, meta_pre
     Handlers rendering shapes.
     """
     for key, value_template in shape.items():
+        if key == "$comment":
+            deep_merge(preset, {key: deepcopy(value_template)})
+            continue
         rendered = _recursive_expand(group, preset["name"], value_template, parameter, meta_presets)
         if key not in preset:
             preset[key] = rendered

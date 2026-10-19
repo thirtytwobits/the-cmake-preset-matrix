@@ -127,6 +127,10 @@ def is_excluded(configuration: Iterable[ScopedParameter], exclude: ExcludeList) 
 
     param_count = len(list(configuration))
     for rule in exclude:
+        if "$comment" in rule:
+            rule = {key: value for key, value in rule.items() if key != "$comment"}
+            if not rule:
+                continue
         matches = 0
         applicable = param_count
         for scoped_parameter in configuration:
@@ -158,6 +162,8 @@ def make_shaped_matrix(
     preset_group = getattr(meta_presets.groups, group)
 
     for shape_name, shape_template in preset_group.shape.items():
+        if shape_name == "$comment":
+            continue
         try:
             result_tuples = get_parameters(group, shape_name, meta_presets)
         except KeyError:
@@ -203,6 +209,8 @@ def make_matrix_presets(
                 )
                 deep_merge(preset, rendered)
             for shape_parameter_name, shape_parameter_list in preset_group.shape_parameters.items():
+                if shape_parameter_name == "$comment":
+                    continue
                 for shape_parameter_value in shape_parameter_list:
                     if is_excluded(
                         list(configuration)
@@ -219,10 +227,7 @@ def make_matrix_presets(
                     )
                     deep_merge(preset, rendered)
         parameter_renderer(preset, preset_group, configuration, meta_presets)
-        if preset_name in presets:
-            presets[preset_name].update(preset)
-        else:
-            presets[preset_name] = preset
+        presets.setdefault(preset_name, {}).update(preset)
 
     return presets
 
@@ -241,6 +246,8 @@ def make_parameter_presets(
     presets = filter_matrix_group_by_visibility(group, hidden, meta_presets)[1]
 
     for shape_name, shape_template in preset_group_shapes.items():
+        if shape_name == "$comment":
+            continue
         try:
             parameters = get_parameters(group, shape_name, meta_presets)
         except KeyError:

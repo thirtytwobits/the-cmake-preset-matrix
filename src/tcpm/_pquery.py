@@ -1304,6 +1304,8 @@ def render_fragment(
             start_at = locate(locator, fragment)
 
     def process_value(location: Location, key_or_index: str | int, value: Any) -> None:
+        if key_or_index == "$comment":
+            return
         locator.append(key_or_index)
         if isinstance(value, str):
             render_string_at(fragment, locator, location, word_separator)

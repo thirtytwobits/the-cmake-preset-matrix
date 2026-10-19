@@ -6,12 +6,30 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
+
+import pytest
 
 from tcpm._data_model import __vendor_section_key__
 from tcpm._pquery import render as pquery_render
 from tcpm._pquery import render_fragment as pquery_render_fragment
 from tcpm._pquery import render_string_at as pquery_render_string_at
+
+
+@pytest.mark.parametrize(
+    "comment",
+    ["$(this).text('do not run')", ["Embedded {$(this).text('do not run')}", "$(this).invalid("]],
+)
+def test_comments_are_literal(comment):
+    """Skip comment values while continuing to render ordinary fields beside them."""
+    document = {
+        "$comment": deepcopy(comment),
+        "nested": [{"$comment": deepcopy(comment), "value": "$(this).text('rendered')"}],
+    }
+    pquery_render_fragment(document)
+    assert document["$comment"] == comment
+    assert document["nested"][0] == {"$comment": comment, "value": "rendered"}
 
 
 def test_text_get_set():

@@ -176,11 +176,11 @@ def backfill_shapes(group: PresetGroup) -> None:
     If no shape is defined for a given parameter backfill with an empty dictionary.
     """
     for parameter_name in group.parameters:
-        if parameter_name not in group.shape:
+        if parameter_name != "$comment" and parameter_name not in group.shape:
             group.shape[parameter_name] = {}
 
     for parameter_name in group.shape_parameters:
-        if parameter_name not in group.shape:
+        if parameter_name != "$comment" and parameter_name not in group.shape:
             group.shape[parameter_name] = {}
 
 
@@ -223,10 +223,7 @@ def update_meta_presets(meta_presets: StructuredPresets, json_presets: dict | No
         )
 
     meta_presets.version = preset_matrix_regen_version
-    try:
-        meta_presets.static = preset_matrix_regen_vendor_data["static"]
-    except KeyError:
-        meta_presets.static = {}
+    meta_presets.static = preset_matrix_regen_vendor_data.get("static", {})
 
     if "word_separator" in preset_matrix_regen_vendor_data:
         meta_presets.word_separator = preset_matrix_regen_vendor_data["word_separator"]
@@ -238,6 +235,8 @@ def update_meta_presets(meta_presets: StructuredPresets, json_presets: dict | No
             meta_presets.onload = preset_matrix_regen_vendor_data["onload"]
 
     for preset_group_name, preset_group in preset_matrix_regen_vendor_data["preset-groups"].items():
+        if preset_group_name == "$comment":
+            continue
         group = getattr(meta_presets.groups, preset_group_name)
         group.name = preset_group_name
         group.prefix = preset_group["prefix"] if "prefix" in preset_group else f"{preset_group_name}"
