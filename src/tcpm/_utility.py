@@ -5,6 +5,7 @@
 """
 Utility functions for the tcpm package.
 """
+
 from __future__ import annotations
 
 import functools

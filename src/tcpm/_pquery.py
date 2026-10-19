@@ -5,6 +5,7 @@
 """
 Various functions for rendering values in the presets file.
 """
+
 # pylint: disable=too-many-lines
 
 from __future__ import annotations
