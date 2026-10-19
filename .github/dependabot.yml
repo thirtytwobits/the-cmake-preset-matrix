@@ -5,6 +5,15 @@ updates:
     schedule:
       interval: daily
       time: "13:00"
+    groups:
+      python-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      python-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
     open-pull-requests-limit: 10
     reviewers:
       - thirtytwobits
@@ -18,5 +27,14 @@ updates:
     schedule:
       interval: daily
       time: "13:00"
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
     commit-message:
       prefix: "fix: "
