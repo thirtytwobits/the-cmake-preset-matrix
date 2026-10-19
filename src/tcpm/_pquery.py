@@ -1192,7 +1192,7 @@ def render_string_at(
 
     """
 
-    if len(locator) < 1:
+    if len(locator) < 1 or "$comment" in locator:
         return False
     if start_at is None:
         if len(locator) == 1:
@@ -1302,6 +1302,9 @@ def render_fragment(
         locator = locator_maybe
         if start_at is None:
             start_at = locate(locator, fragment)
+
+    if "$comment" in locator:
+        return
 
     def process_value(location: Location, key_or_index: str | int, value: Any) -> None:
         if key_or_index == "$comment":

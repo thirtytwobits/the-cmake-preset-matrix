@@ -32,6 +32,30 @@ def test_comments_are_literal(comment):
     assert document["nested"][0] == {"$comment": comment, "value": "rendered"}
 
 
+@pytest.mark.parametrize("explicit_start", [False, True])
+def test_comment_array_at_explicit_locator_is_literal(explicit_start):
+    """Starting at a comment array must not evaluate any of its documentation strings."""
+    comment = ["$(this).text('do not run')", "$(this).invalid("]
+    document = {"nested": {"$comment": comment.copy()}}
+    locator = ["nested", "$comment"]
+    start_at = document["nested"]["$comment"] if explicit_start else None
+
+    pquery_render_fragment(document, locator, start_at=start_at)
+
+    assert document == {"nested": {"$comment": comment}}
+    assert locator == ["nested", "$comment"]
+
+
+@pytest.mark.parametrize(
+    "comment, locator", [("$(this).invalid(", ["$comment"]), (["$(this).invalid("], ["$comment", 0])]
+)
+def test_comment_string_at_explicit_locator_is_literal(comment, locator):
+    """Direct string rendering also treats comment locations as documentation."""
+    document = {"$comment": deepcopy(comment)}
+    assert pquery_render_string_at(document, locator) is False
+    assert document == {"$comment": comment}
+
+
 def test_text_get_set():
     """
     Tests of the text function on individual elements.

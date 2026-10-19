@@ -48,3 +48,21 @@ def test_merge_comments_in_vendor_arrays():
     merge_comments(original, target)
     assert target[0]["$comment"] == "Named"
     assert target[1]["$comment"] == "Unnamed"
+
+
+@pytest.mark.parametrize("target_count", [1, 2, 3])
+def test_merge_comments_matches_duplicate_names_one_to_one(target_count):
+    """Duplicate names in vendor arrays match by occurrence without pooling comments."""
+    original = [
+        {"name": "tool", "type": "custom", "option": "one", "$comment": "First note"},
+        {"name": "tool", "type": "custom", "option": "two", "$comment": "Second note"},
+    ]
+    target = [{"name": "tool", "type": "custom", "option": index} for index in range(target_count)]
+    merge_comments(original, target)
+    assert target[0]["$comment"] == "First note"
+    if target_count >= 2:
+        assert target[1]["$comment"] == "Second note"
+    if target_count == 3:
+        assert "$comment" not in target[2]
+    merge_comments(original, target)
+    assert target[0]["$comment"] == "First note"

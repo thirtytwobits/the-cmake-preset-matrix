@@ -181,3 +181,21 @@ def test_clean_does_not_restore_obsolete_presets_or_fields():
     assert "configure-obsolete" not in presets
     assert presets["configure-debug"]["$comment"] == "Keep"
     assert "vendor" not in presets["configure-debug"]
+
+
+@pytest.mark.parametrize("group", ["configure", "build", "test", "package", "workflow"])
+def test_comment_only_parameters_do_not_activate_groups(group):
+    """Comments must not add empty preset arrays or prevent a group from being skipped."""
+    document = {
+        "version": 10,
+        "vendor": {
+            "tcpm": {"version": 1, "preset-groups": {group: {"parameters": {"$comment": ["Documentation only"]}}}}
+        },
+    }
+    original = deepcopy(document)
+    meta_presets = make_meta_presets(document)
+
+    skipped = transform_in_place(meta_presets, 0)
+
+    assert group in skipped
+    assert meta_presets.source == original

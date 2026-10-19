@@ -14,6 +14,7 @@ import json
 import logging
 import shutil
 import urllib.request
+from collections import defaultdict, deque
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Iterable
@@ -70,6 +71,8 @@ def deep_merge(d1: dict, d2: dict) -> None:
 
 def merge_comments(source: Any, target: Any) -> None:
     """Restore comments on surviving objects without restoring obsolete preset fields."""
+    if source is target:
+        return
     if isinstance(source, dict) and isinstance(target, dict):
         for key, value in source.items():
             if key == "$comment":
@@ -79,17 +82,17 @@ def merge_comments(source: Any, target: Any) -> None:
     elif isinstance(source, list) and isinstance(target, list):
         # Presets and workflow steps can move during regeneration. Match these by identity,
         # keeping the step type distinct when configure/build steps share a name.
-        named_targets = {
-            (item["name"], item.get("type") if isinstance(item.get("type"), str) else None): item
-            for item in target
-            if isinstance(item, dict) and isinstance(item.get("name"), str)
-        }
+        named_targets: dict[tuple[str, str | None], deque[dict]] = defaultdict(deque)
+        for item in target:
+            if isinstance(item, dict) and isinstance(item.get("name"), str):
+                item_type = item.get("type") if isinstance(item.get("type"), str) else None
+                named_targets[(item["name"], item_type)].append(item)
         for index, item in enumerate(source):
             if isinstance(item, dict) and isinstance(item.get("name"), str):
                 item_type = item.get("type") if isinstance(item.get("type"), str) else None
-                match = named_targets.get((item["name"], item_type))
-                if match is not None:
-                    merge_comments(item, match)
+                matches = named_targets.get((item["name"], item_type))
+                if matches:
+                    merge_comments(item, matches.popleft())
             elif index < len(target):
                 merge_comments(item, target[index])
 
