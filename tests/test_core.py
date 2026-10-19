@@ -76,6 +76,65 @@ def test_maintains_unmanaged():
 
 
 @pytest.mark.parametrize("clean", [0, 1, 2])
+@pytest.mark.parametrize("custom_prefixes", [False, True])
+def test_preset_prefixes(clean, custom_prefixes):
+    """Use group prefixes for generated names, references, and cleanup on repeated runs."""
+    prefixes = {
+        group: f"custom-{group}" if custom_prefixes else group
+        for group in ("configure", "build", "test", "package", "workflow")
+    }
+    document = {"version": 10, "vendor": {"tcpm": {"version": 1, "preset-groups": {}}}}
+    groups = document["vendor"]["tcpm"]["preset-groups"]
+    for group, prefix in prefixes.items():
+        shape = {"displayName": "{prefix}{sep}{parameter}"}
+        if group == "configure":
+            shape["cacheVariables"] = {"MODE": "{parameter}"}
+        elif group == "workflow":
+            shape["steps"] = [
+                {"type": step, "name": "{groups[" + step + "][prefix]}{sep}{parameter}"}
+                for step in ("configure", "build")
+            ]
+        else:
+            shape["configurePreset"] = "{groups[configure][prefix]}{sep}{parameter}"
+        groups[group] = {"parameters": {"mode": ["debug"]}, "shape": {"mode": shape}}
+        if custom_prefixes:
+            groups[group]["prefix"] = prefix
+        document[f"{group}Presets"] = [
+            {"name": f"{prefix}-obsolete"},
+            {"name": "manual-entry", "$comment": "Keep unmanaged presets"},
+        ]
+    document["configurePresets"].append({"name": f"{prefixes['configure']}-mode-obsolete", "hidden": True})
+
+    meta_presets = make_meta_presets(document)
+    transform_in_place(meta_presets, clean)
+    for group, prefix in prefixes.items():
+        presets = {preset["name"]: preset for preset in meta_presets.source[f"{group}Presets"]}
+        expected_names = {"manual-entry", f"{prefix}-debug"}
+        if clean < 2:
+            expected_names.add(f"{prefix}-obsolete")
+        if group == "configure":
+            expected_names.add(f"{prefix}-mode-debug")
+            if clean < 2:
+                expected_names.add(f"{prefix}-mode-obsolete")
+            hidden = presets[f"{prefix}-mode-debug"]
+            assert hidden["hidden"] is True
+            assert hidden["cacheVariables"]["MODE"] == "debug"
+            assert hidden["displayName"] == f"{prefix}-debug"
+            assert presets[f"{prefix}-debug"]["inherits"] == [hidden["name"]]
+        elif group == "workflow":
+            assert presets[f"{prefix}-debug"]["steps"] == [
+                {"type": step, "name": f"{prefixes[step]}-debug"} for step in ("configure", "build")
+            ]
+        else:
+            assert presets[f"{prefix}-debug"]["configurePreset"] == f"{prefixes['configure']}-debug"
+        assert set(presets) == expected_names
+
+    first_result = deepcopy(meta_presets.source)
+    transform_in_place(meta_presets, clean)
+    assert meta_presets.source == first_result
+
+
+@pytest.mark.parametrize("clean", [0, 1, 2])
 def test_preserves_comments(clean):
     """Keep literal comments in metadata, shapes, and regenerated presets in every group."""
     literal_comment = ["Keep {literal} and {parameter} unchanged.", "$(this).text('do not execute')"]

@@ -20,6 +20,18 @@ Guide
     with pytest.raises(SystemExit) as wrapped_exception:
         cli_main(["--help"])
 
+Preset prefixes
+================================================
+
+Each entry in ``vendor.tcpm.preset-groups`` accepts a ``prefix`` string, which defaults to the group name
+(``configure``, ``build``, ``test``, ``package``, or ``workflow``). TCPM adds the separator between the prefix and
+each parameter; the prefix does not need a trailing separator.
+
+For example, a configure group with ``"prefix": "config"`` and ``"parameters": {"mode": ["debug"]}`` generates
+the hidden preset ``config-mode-debug`` and the visible preset ``config-debug``. The visible preset inherits
+from ``config-mode-debug``. Shape templates can use ``{prefix}`` for the current group's prefix and
+``{groups[configure][prefix]}`` to reference the configure group's prefix from another group.
+
 Comments
 ================================================
 

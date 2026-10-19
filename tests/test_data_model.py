@@ -20,7 +20,7 @@ def test_default_meta_presets():
     for name in ("configure", "build", "test", "package", "workflow"):
         group = meta_presets.groups[name]
         assert group.name == name
-        assert group.prefix == f"{name}-"
+        assert group.prefix == name
         assert group.common == []
         assert group.shape == {}
         assert group.parameters == {}
