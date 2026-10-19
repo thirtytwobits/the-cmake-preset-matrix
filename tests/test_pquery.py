@@ -6,12 +6,54 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
+
+import pytest
 
 from tcpm._data_model import __vendor_section_key__
 from tcpm._pquery import render as pquery_render
 from tcpm._pquery import render_fragment as pquery_render_fragment
 from tcpm._pquery import render_string_at as pquery_render_string_at
+
+
+@pytest.mark.parametrize(
+    "comment",
+    ["$(this).text('do not run')", ["Embedded {$(this).text('do not run')}", "$(this).invalid("]],
+)
+def test_comments_are_literal(comment):
+    """Skip comment values while continuing to render ordinary fields beside them."""
+    document = {
+        "$comment": deepcopy(comment),
+        "nested": [{"$comment": deepcopy(comment), "value": "$(this).text('rendered')"}],
+    }
+    pquery_render_fragment(document)
+    assert document["$comment"] == comment
+    assert document["nested"][0] == {"$comment": comment, "value": "rendered"}
+
+
+@pytest.mark.parametrize("explicit_start", [False, True])
+def test_comment_array_at_explicit_locator_is_literal(explicit_start):
+    """Starting at a comment array must not evaluate any of its documentation strings."""
+    comment = ["$(this).text('do not run')", "$(this).invalid("]
+    document = {"nested": {"$comment": comment.copy()}}
+    locator = ["nested", "$comment"]
+    start_at = document["nested"]["$comment"] if explicit_start else None
+
+    pquery_render_fragment(document, locator, start_at=start_at)
+
+    assert document == {"nested": {"$comment": comment}}
+    assert locator == ["nested", "$comment"]
+
+
+@pytest.mark.parametrize(
+    "comment, locator", [("$(this).invalid(", ["$comment"]), (["$(this).invalid("], ["$comment", 0])]
+)
+def test_comment_string_at_explicit_locator_is_literal(comment, locator):
+    """Direct string rendering also treats comment locations as documentation."""
+    document = {"$comment": deepcopy(comment)}
+    assert pquery_render_string_at(document, locator) is False
+    assert document == {"$comment": comment}
 
 
 def test_text_get_set():

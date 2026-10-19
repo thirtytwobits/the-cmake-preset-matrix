@@ -17,7 +17,12 @@ from typing import Any
 
 from .._core import transform_in_place
 from .._data_model import make_meta_presets
-from .._utility import PresetWriter, validate_json_schema_for_presets_unless, validate_json_schema_for_result_unless
+from .._utility import (
+    PresetWriter,
+    merge_comments,
+    validate_json_schema_for_presets_unless,
+    validate_json_schema_for_result_unless,
+)
 from ._parser import __script_name__, make_parser
 
 _cli_logger = logging.getLogger(__script_name__)
@@ -132,10 +137,11 @@ def read_and_merge_template_and_presets(template_file: Path, presets_file: Path)
         with presets_file.open("r", encoding="UTF-8") as f:
             existing_json_presets = json.load(f)
         if json_template is not None:
-            if "vendor" in existing_json_presets and "tcpm" in existing_json_presets["vendor"]:
-                del existing_json_presets["vendor"]["tcpm"]
+            existing_tcpm = existing_json_presets.get("vendor", {}).pop("tcpm", {})
             json_presets = {**json_template, **existing_json_presets}
             json_presets["vendor"]["tcpm"] = json_template["vendor"]["tcpm"]
+            merge_comments(existing_tcpm, json_presets["vendor"]["tcpm"])
+            merge_comments(json_template, json_presets)
         else:
             json_presets = existing_json_presets
     else:

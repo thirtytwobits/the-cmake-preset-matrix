@@ -7,12 +7,13 @@ Core functions for transforming presets.
 """
 
 import logging
+from copy import deepcopy
 from dataclasses import fields
 
-from ._data_model import StructuredPresets, update_meta_presets
+from ._data_model import StructuredPresets, get_preset_group_names, update_meta_presets
 from ._generators import make_matrix_presets, make_parameter_presets
 from ._pquery import render as render_pquery
-from ._utility import clean_source, merge_preset_list, reclean_source
+from ._utility import clean_source, merge_comments, merge_preset_list, reclean_source
 from .cli._parser import __script_name__
 
 _core_logger = logging.getLogger(__script_name__)
@@ -30,7 +31,7 @@ def ensure_preset_groups(meta_presets: StructuredPresets) -> set[str]:
 
     for group_field in fields(meta_presets.groups):
         if f"{group_field.name}Presets" not in meta_presets.source:
-            if len(meta_presets.groups[group_field.name].parameters) == 0:
+            if not any(name != "$comment" for name in meta_presets.groups[group_field.name].parameters):
                 skip_list.add(group_field.name)
             else:
                 meta_presets.source[f"{group_field.name}Presets"] = []
@@ -58,30 +59,34 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
     render_pquery(meta_presets.source, word_separator=meta_presets.word_separator, events=["onload"])
     update_meta_presets(meta_presets)
 
+    original_presets = {
+        key: deepcopy(meta_presets.source[key]) for key in get_preset_group_names() if key in meta_presets.source
+    }
     skip_list: set[str] = ensure_preset_groups(meta_presets)
 
-    clean_source("configure", clean, True, meta_presets)
-    hidden_preset_index = make_parameter_presets(
-        "configure",
-        True,
-        meta_presets,
-    )
-    reclean_source("configure", clean, True, meta_presets)  # TODO: I don't think I need reclean anymore
-    meta_presets.source["configurePresets"] = merge_preset_list(
-        meta_presets.source["configurePresets"], hidden_preset_index
-    )
+    if "configure" not in skip_list:
+        clean_source("configure", clean, True, meta_presets)
+        hidden_preset_index = make_parameter_presets(
+            "configure",
+            True,
+            meta_presets,
+        )
+        reclean_source("configure", clean, True, meta_presets)  # TODO: I don't think I need reclean anymore
+        meta_presets.source["configurePresets"] = merge_preset_list(
+            meta_presets.source["configurePresets"], hidden_preset_index
+        )
 
-    clean_source("configure", clean, False, meta_presets)
-    render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
-    visible_preset_index = make_matrix_presets(
-        "configure",
-        False,
-        meta_presets,
-    )
-    reclean_source("configure", clean, False, meta_presets)
-    meta_presets.source["configurePresets"] = merge_preset_list(
-        meta_presets.source["configurePresets"], visible_preset_index
-    )
+        clean_source("configure", clean, False, meta_presets)
+        render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
+        visible_preset_index = make_matrix_presets(
+            "configure",
+            False,
+            meta_presets,
+        )
+        reclean_source("configure", clean, False, meta_presets)
+        meta_presets.source["configurePresets"] = merge_preset_list(
+            meta_presets.source["configurePresets"], visible_preset_index
+        )
 
     for group_field in fields(meta_presets.groups):
         group = group_field.name
@@ -105,4 +110,5 @@ def transform_in_place(meta_presets: StructuredPresets, clean: int) -> set[str]:
 
     render_pquery(meta_presets.source, word_separator=meta_presets.word_separator)
 
+    merge_comments(original_presets, meta_presets.source)
     return skip_list
